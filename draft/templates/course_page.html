@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
+    <meta name=description content="Page for inidivual course in Syllabo database">
+    <title>Course Page</title>
+    <link rel="stylesheet" type="text/css"
+          href="/static/styling.css">
+</head>
+<div id="navigation">nav bar should use template inheritance :)</div>
+<body>
+    <!-- these variable names may need to be changed later on!  -->
+    <h3>"{{title}}"</h3>
+    <h3>"{{cnum}}"</h3>
+    <table id="basics" style="width:100%">
+        <tr>
+          <th>Logistics</th>
+          <th></th>
+        </tr>
+        <tr>
+            <td>Department</td>
+            <td>{department}}</td>
+        </tr>
+        <tr>
+            <td>Professor</td>
+            <td>{{professor}}</td>
+        </tr>
+        <tr>
+          <td>Year</td>
+          <td>{{year}}</td>
+        </tr>
+        <tr>
+          <td>Semester</td>
+          <td>{{semester}}</td>
+        </tr>
+        <tr>
+          <td>CRN</td>
+          <td>{{crn}}</td>
+        </tr>
+      </table>
+      <table id="ratings" style="width:100%">
+        <tr>
+          <th>Ratings</th>
+          <th></th>
+        </tr>
+        <tr>
+            <td>Usefulness for major</td>
+            <td>{{useful}}</td>
+        </tr>
+        <tr>
+            <td>Difficulty</td>
+            <td>{{difficulty}}</td>
+        </tr>
+        <tr>
+          <td>Relevance of course assignments</td>
+          <td>{{relevance}}</td>
+        </tr>
+        <tr>
+          <td>Expectations were clearly defined</td>
+          <td>{{expectations}}</td>
+        </tr>
+        <tr>
+          <td>Hours per week spent on coursework</td>
+          <td>{{hrsweek}}</td>
+        </tr>
+	  </table>
+		<a href={{syllabus}}><h4>Syllabus PDF</h4></a>
+    	
+    	<h4>Course Website</h4>
+    	 <iframe src={{website}} width="80%" height="400px">
+    	</iframe>
+    	
+      <p>How did other students find this course?</p>
+      
+      <ul id="comments" style="width:100%">
+      {% for comment in comments %}
+          <li>{{student}}: {{comment}}</td>
+    	{% endfor %}
+      
+       <form method="post" action="">
+            <p><label for="new_comment">Comment</label>:</p>
+            <p><textarea id="new_comment"
+                         name="new_comment"
+                         rows="6" cols="70"></textarea></p>
+            <p><input type="submit" value="submit">
+        </form>
+      
+</body>
+
+</html>
