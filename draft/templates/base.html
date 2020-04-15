@@ -1,10 +1,11 @@
-<!doctype html>
-<html lang='en'>
+<!DOCTYPE html>
+<html>
 <head>
-    <meta charset='utf-8'>
-    <meta name=author content="">
-    <title>{{ page_title }}</title>
-    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    <meta charset="utf-8">
+    <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
+    <meta name=description content="Syllabo Wellesley Syllabus Database">
+    <link rel="stylesheet" type="text/css"
+          href="/static/styling.css">    
     {% block head_stuff %} {% endblock %}
 </head>
 <body>
@@ -19,7 +20,14 @@
     {% endif %}
 {% endwith %}
 
-<a href="/create/">Create a Course</a>
+{% block nav_bar %}
+<ul id="nav_bar">
+    <li><a href="/" id="left_nav_bar">Syllabo</a></li>
+    <li><a href="/create/">Create a Course</a></li>
+    <li><a href="/explore/">Explore Courses</a></li>
+    <li><a href="/profile/">Profile</a></li>
+</ul>
+{% endblock %}
             
 {% block main_content %}
 <h1>Welcome!</h1>
