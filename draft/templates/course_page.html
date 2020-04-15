@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
-    <meta name=description content="Syllabo Wellesley Syllabus Database">
-    <title>Course Page</title>
-    <link rel="stylesheet" type="text/css"
-          href="/static/styling.css">
-</head>
-<div id="navigation">nav bar should use template inheritance :)</div>
-<body>
+{% extends "base.html" %}
+
+{% block head_stuff%}
+<title>Course Page</title>
+{% endblock %}
+
+{% block main_content %}
+
     <!-- these variable names may need to be changed later on!  -->
     <h3>"{{title}}"</h3>
     <h3>"{{cnum}}"</h3>
@@ -86,6 +82,4 @@
             <p><input type="submit" value="submit">
         </form>
       
-</body>
-
-</html>
+{% endblock %}
