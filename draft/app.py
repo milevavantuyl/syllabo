@@ -1,3 +1,4 @@
+"Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl"
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 app = Flask(__name__)
@@ -5,8 +6,7 @@ app = Flask(__name__)
 # one or the other of these. Defaults to MySQL (PyMySQL)
 # change comment characters to switch to SQLite
 
-import cs304dbi as dbi
-# import cs304dbi_sqlite3 as dbi
+import syllabo_db as dbi
 
 import random
 
@@ -74,13 +74,13 @@ if __name__ == '__main__':
         port = os.getuid()
     # the following database code works for both PyMySQL and SQLite3
     dbi.cache_cnf()
-    dbi.use('wmdb')
+    dbi.use('syllabo_db')
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     # the following query works for both MySQL and SQLite
     curs.execute('select current_timestamp as ct')
     row = curs.fetchone()
     ct = row['ct']
-    print('connected to WMDB at {}'.format(ct))
+    print('connected to Syllabo DB at {}'.format(ct))
     app.debug = True
     app.run('0.0.0.0',port)

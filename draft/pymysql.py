@@ -3,7 +3,7 @@ pymysql functions for Syllabo'''
 import sys
 import pymysql
 import pymysql.constants.ER
-import cs304dbi as dbi
+import syllabo_db as dbi
 
 # Sarah's functions:
 '''getBasics() returns a dictionary of course information 
@@ -47,7 +47,7 @@ def getComments(cid):
     conn.commit()
     return commentsDict
 
-'''makeRatings() inserts a new row into the rates table of syllabo_db. 
+'''makeRatings() (returns None) inserts a new row into the rates table of syllabo_db. 
     The cid will be supplied by the page, the bNum by the session login info,
     and all other columns from the rating form submitted by the user
     found on the course page.'''
@@ -57,4 +57,9 @@ def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk,
     query = curs.execute('''
     INSERT INTO rates(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
-    [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment]'''
+    [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
+    conn.commit()
+
+if __name__ == '__main__':
+   dbi.cache_cnf()   # defaults to ~/.my.cnf
+   dbi.use('syllabo_db')
