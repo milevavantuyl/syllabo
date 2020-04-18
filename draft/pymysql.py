@@ -60,7 +60,34 @@ def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk,
     [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
     conn.commit()
 
-    
+'''addSyllabus() updates the given row in the course table to add a syllabus'''
+def addSyllabus(cid, syl):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+    UPDATE course SET syl = (%s)
+    WHERE cid = (%s)''', [syl, cid])
+    conn.commit()
+
+'''addWebsite() updates the given row in the course table to add a website'''
+def addWebsite(cid, web):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+    UPDATE course SET web = (%s)
+    WHERE cid = (%s)''', [syl, web])
+    conn.commit()
+
+'''updateCourse() allows the user to update any information about the course'''
+def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+    UPDATE course 
+    SET title = (%s), dep = (%s), cnum = (%s), crn = (%s), syl = (%s), 
+    web = (%s), yr = (%s), sem = (%s), prof = (%s) 
+    WHERE cid = (%s)''', [title, dep, cnum, crn, syl, web, yr, sem, prof, cid])
+    conn.commit()
 
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
