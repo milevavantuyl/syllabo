@@ -27,7 +27,7 @@ def getAvgRatings(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT AVG(relevRATE), AVG(usefulRATE), AVG(diffRATE), AVG(expectRATE), AVG(hoursWk)
+    SELECT AVG(relevRate), AVG(usefulRate), AVG(diffRate), AVG(expectRate), AVG(hoursWk)
     FROM rates
     WHERE cid = (%s)''', [cid])
     avgRatingsDict = curs.fetchone()
@@ -40,10 +40,10 @@ def getComments(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT comment
-    FROM rates
+    SELECT username, comment  
+    FROM rates INNER JOIN student USING(bNum)
     WHERE cid = (%s)''', [cid])
-    commentsDict = curs.fetchone()
+    commentsDict = curs.fetchall()
     conn.commit()
     return commentsDict
 
@@ -59,6 +59,8 @@ def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk,
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
     [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
     conn.commit()
+
+    
 
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf

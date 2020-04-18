@@ -6,7 +6,7 @@ app = Flask(__name__)
 # one or the other of these. Defaults to MySQL (PyMySQL)
 # change comment characters to switch to SQLite
 
-import syllabo_db as dbi
+import pymysql as dbi
 
 import random
 
@@ -44,6 +44,51 @@ def greet():
             flash('form submission error'+str(err))
             return redirect( url_for('index') )
 
+@app.route('/courses/<cid>', methods=['GET','POST'])
+def showCourse(cid):
+    if request.method == 'GET':
+        basics = db.getBasics(cid)
+        avgRatings = db.getAvgRatings(cid)
+        comments = db.getComments(cid)
+        print('basics: ')
+        print(basics)
+        print('avgRatings: ')
+        print(avgRatings)
+        print('comments: ')
+        print(comments)
+        return render_templates('course_page.html', title=basics['title'],
+            cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
+            yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
+            web=basics['web'], usefullRate=avgRatings['usefullRate'], 
+            diffRate=avgRatings['diffRate'], relevRate=avgRatings['relevRate'], 
+            expectRate=avgRatings['expectRate'], hoursWk=avgRatings['hoursWk'],
+            comments=comments)
+    elif request.method == 'POST':
+        #user is rating (which includes commenting) the course.
+        action = request.form.get("submit")
+        if action == 'rate':
+            uR = request.form.get('usefulRate')
+            dR = request.form.get('diffRate')
+            rR = request.form.get('relevRate')
+            eR = request.form.get('expectRate')
+            hW = request.form.get('hoursWk')
+            comment = request.form.get('new_comment')
+            makeRatings(bNum, cid, rR, uR, dR, eR, hW, comment)
+            #have to recalculate the ratings and fetch the comments again
+            avgRatings = db.getAvgRatings(cid)
+            comments = db.getComments(cid)
+            return render_templates('course_page.html', title=basics['title'],
+            cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
+            yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
+            web=basics['web'], usefullRate=avgRatings['usefullRate'], 
+            diffRate=avgRatings['diffRate'], relevRate=avgRatings['relevRate'], 
+            expectRate=avgRatings['expectRate'], hoursWk=avgRatings['hoursWk'],
+            comments=comments)
+
+@app.route('/courses/<cid>/update', methods=['GET','POST'])
+def updateCourse(cid):
+    if request.method == 'GET':
+        print("hello")
 @app.route('/formecho/', methods=['GET','POST'])
 def formecho():
     if request.method == 'GET':
