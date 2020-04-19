@@ -3,6 +3,8 @@ pymysql functions for Syllabo'''
 # import sys
 # import pymysql
 # import pymysql.constants.ER
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
 import cs304dbi as dbi
 
 # Sarah's functions:
@@ -87,6 +89,27 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
     SET title = (%s), dep = (%s), cnum = (%s), crn = (%s), syl = (%s), 
     web = (%s), yr = (%s), sem = (%s), prof = (%s) 
     WHERE cid = (%s)''', [title, dep, cnum, crn, syl, web, yr, sem, prof, cid])
+    conn.commit()
+
+# Safiya's functions:
+def getCourseInfo():
+    title = request.form.get('course-title')
+    dep = request.form.get('course-dept')
+    cnum = request.form.get('course-num')
+    crn = request.form.get('course-crn')
+    web = request.form.get('course-website')
+    yr = request.form.get('course-year')
+    sem = request.form.get('course-sem')
+    prof = request.form.get('course-prof')
+    return [title, dep, cnum, crn, web, yr, sem, prof]
+
+def insertCourse(val):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+    INSERT into course(title, dep, cnum, crn, web, yr, sem, prof)
+    VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
+    [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
     conn.commit()
 
 if __name__ == '__main__':

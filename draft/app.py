@@ -21,11 +21,18 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    return render_template('main.html',title='Syllabo')
+    return render_template('home.html',title='Syllabo')
 
-@app.route('/create/')
+@app.route('/create/', methods=['GET','POST'])
 def createCourse():
-    return render_template('create_course.html',title='Syllabo')
+    if request.method == 'GET':
+        return render_template('create_course.html')
+    else:
+        values = functions.getCourseInfo()
+        functions.insertCourse(values)
+        flash('Your updates have been made, insert another course!')
+        return redirect(url_for('createCourse'))
+
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):

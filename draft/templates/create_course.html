@@ -4,23 +4,23 @@
 
 <h1>Create a Course!</h1>
 
-<form method="post" action="">
+<form method="POST" action="/create/">
 
     <fieldset>
     <legend>Course Info</legend>
     <table>
     <tbody><tr><td><label for="course-title"> Course Title:</label></td>
-        <td><input type="text" name="course-title" id="course-title"></td></tr>
+        <td><input type="text" name="course-title" value="" id="course-title"></td></tr>
     <tr><td><label for="course-dept">Department:</label></td>
-        <td><input type="text" name="course-dept" id="course-dept"></td></tr>
+        <td><input type="text" name="course-dept" value="" id="course-dept"></td></tr>
     <tr><td><label for="course-num">Course Number:</label></td>
-        <td><input type="text" name="course-num" id="course-num"></td></tr>
+        <td><input type="text" name="course-num" value="" id="course-num"></td></tr>
     <tr><td><label for="course-crn">CRN:</label></td>
-        <td><input type="text" name="course-crn" id="course-crn"></td></tr>
+        <td><input type="text" name="course-crn" value="" id="course-crn"></td></tr>
     <tr><td><label for="course-website">Website:</label></td>
-        <td><input type="text" name="course-website" id="course-website"></td></tr>
+        <td><input type="text" name="course-website" value="" id="course-website"></td></tr>
     <tr><td><label for="course-prof">Professor:</label></td>
-        <td><input type="text" name="course-prof" id="course-prof"></td></tr>
+        <td><input type="text" name="course-prof" value="" id="course-prof"></td></tr>
     <tr><td><label for="course-sem">Semester:</label></td>
         <td><select id="course-sem" name="course-sem">
             <option value="Fall">Fall</option>
@@ -42,10 +42,10 @@
 
 </form>
 
-<form action = "/uploader/" method = "POST" 
+<!-- <form action = "/uploader/" method = "POST" 
 enctype = "multipart/form-data">
 <input type = "file" name = "file" />
 <input type = "submit" value = "Upload Syllabus"/>
-</form>
+</form> -->
 
 {% endblock %}
