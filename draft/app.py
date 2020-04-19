@@ -33,6 +33,26 @@ def createCourse():
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('createCourse'))
 
+@app.route('/search/', methods = ['GET']) 
+def search(): 
+    conn = dbi.connect()
+    search = request.args.get('search')
+    kind = request.args.get('type')
+
+    courses = functions.searchCourse(conn, search, kind)
+
+    # No results: redirect user to create a new course
+    if len(courses) == 0:
+        flash ('No results for {} in the database.'.format(search))
+        return redirect(url_for('createCourse')) 
+
+    # One result: redirect user to specific course page
+    elif len(courses) == 1: 
+        return redirect(url_for(showCourse, cid = courses['cid']))
+    
+    # Multiple results: display all the results
+    else: 
+        return render_template('search_results.html', courses = courses)
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
