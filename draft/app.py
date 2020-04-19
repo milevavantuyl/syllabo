@@ -4,12 +4,8 @@ from flask import (Flask, render_template, make_response, url_for, request,
 from werkzeug.utils import secure_filename
 import cs304dbi as dbi
 import functions
+
 app = Flask(__name__)
-
-# one or the other of these. Defaults to MySQL (PyMySQL)
-# change comment characters to switch to SQLite
-
-# import pymysql as dbi
 
 import random
 
@@ -28,26 +24,10 @@ def index():
     return render_template('main.html',title='Syllabo')
 
 @app.route('/create/')
-def create():
+def createCourse():
     return render_template('create_course.html',title='Syllabo')
 
-@app.route('/greet/', methods=["GET", "POST"])
-def greet():
-    if request.method == 'GET':
-        return render_template('greet.html', title='Customized Greeting')
-    else:
-        try:
-            username = request.form['username'] # throws error if there's trouble
-            flash('form submission successful')
-            return render_template('greet.html',
-                                   title='Welcome '+username,
-                                   name=username)
-
-        except Exception as err:
-            flash('form submission error'+str(err))
-            return redirect( url_for('index') )
-
-@app.route('/courses/<cid>', methods=['GET','POST'])
+@app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
     if request.method == 'GET':
         basics = db.getBasics(cid)
@@ -92,6 +72,7 @@ def showCourse(cid):
 def updateCourse(cid):
     if request.method == 'GET':
         print("hello")
+
 @app.route('/formecho/', methods=['GET','POST'])
 def formecho():
     if request.method == 'GET':
