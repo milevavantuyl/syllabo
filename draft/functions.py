@@ -1,9 +1,9 @@
 '''Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl
 pymysql functions for Syllabo'''
-import sys
-import pymysql
-import pymysql.constants.ER
-import syllabo_db as dbi
+# import sys
+# import pymysql
+# import pymysql.constants.ER
+import cs304dbi as dbi
 
 # Sarah's functions:
 '''getBasics() returns a dictionary of course information 

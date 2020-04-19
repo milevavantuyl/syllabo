@@ -28,7 +28,22 @@
     <li><a href="/profile/">Profile</a></li>
 </ul>
 {% endblock %}
-            
+
+{% block search_bar %}
+<form method="POST" action="/search">
+    <p><label>Search: <input type="text" name="search"></label>
+        <label>Search by: 
+            <select name="type">
+                <option value>select</option>
+                <option value="title">Course Title</option>
+                <option value="department">Course Department</option> 
+                <option value="coursenum">Course Number</option>
+            </select>
+        </label>
+        <input type="submit" value="search"></p>
+</form>
+{% endblock %}
+
 {% block main_content %}
 <h1>Welcome!</h1>
 {% endblock %}

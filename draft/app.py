@@ -1,12 +1,15 @@
 "Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl"
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
+from werkzeug.utils import secure_filename
+import cs304dbi as dbi
+import functions
 app = Flask(__name__)
 
 # one or the other of these. Defaults to MySQL (PyMySQL)
 # change comment characters to switch to SQLite
 
-import pymysql as dbi
+# import pymysql as dbi
 
 import random
 
@@ -22,7 +25,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    return render_template('greet.html',title='Syllabo')
+    return render_template('main.html',title='Syllabo')
 
 @app.route('/create/')
 def create():
