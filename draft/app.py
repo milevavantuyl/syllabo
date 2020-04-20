@@ -35,11 +35,10 @@ def createCourse():
 
 @app.route('/search/', methods = ['GET']) 
 def search(): 
-    conn = dbi.connect()
     search = request.args.get('search')
     kind = request.args.get('type')
 
-    courses = functions.searchCourse(conn, search, kind)
+    courses = functions.getCourses(search, kind)
 
     # No results: redirect user to create a new course
     if len(courses) == 0:

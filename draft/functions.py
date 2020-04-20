@@ -91,6 +91,46 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
     WHERE cid = (%s)''', [title, dep, cnum, crn, syl, web, yr, sem, prof, cid])
     conn.commit()
 
+# Mileva's functions:
+
+def getCourses(query, kind):
+    if (kind == "title"):
+        return (getByTitle(query))
+    elif (kind == "dep"):
+        return (getByDepartment(query))
+    else:
+        return (getByCnum(query))
+
+def getByTitle(query):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof 
+                    FROM course 
+                    WHERE title like %s''', ['%' + query + '%']) 
+                    # question substitute title w/ variable
+    courses = curs.fetchall()
+    return courses
+
+def getByDepartment(query):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof 
+                    FROM course 
+                    WHERE dep like %s''', ['%' + query + '%']) 
+                    # question substitute dep w/ variable
+    courses = curs.fetchall()
+    return courses
+
+def getByCnum(query):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof 
+                    FROM course 
+                    WHERE cnum like %s''', ['%' + query + '%']) 
+                    # question substitute cnum w/ variable
+    courses = curs.fetchall()
+    return courses
+
 # Safiya's functions:
 def getCourseInfo():
     title = request.form.get('course-title')
@@ -115,3 +155,7 @@ def insertCourse(val):
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
+   print(getCourses('database', 'title'))
+   print(getCourses('CS 2', 'cnum'))
+   print(getCourses('ench', 'dep'))
+
