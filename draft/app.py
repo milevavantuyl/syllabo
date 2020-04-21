@@ -38,20 +38,22 @@ def search():
     search = request.args.get('search')
     kind = request.args.get('type')
 
-    courses = functions.getCourses(search, kind)
+    allCourses = functions.getCourses(search, kind)
+    uniqueCourses = getUniqueCourses(courses)
 
     # No results: redirect user to create a new course
-    if len(courses) == 0:
+    if len(allCourses) == 0:
         flash ('No results for {} in the database.'.format(search))
         return redirect(url_for('createCourse')) 
 
     # One result: redirect user to specific course page
-    elif len(courses) == 1: 
-        return redirect(url_for(showCourse, cid = courses['cid']))
+    elif len(allCourses) == 1: 
+        return redirect(url_for(showCourse, cid = allCourses[0]['cid']))
     
     # Multiple results: display all the results
     else: 
-        return render_template('search_results.html', courses = courses)
+        return render_template('search_results.html', 
+        uniqueCourses = uniqueCourses, courses = allCourses, query = search)
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
