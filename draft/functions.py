@@ -42,7 +42,7 @@ def getComments(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT username, comment  
+    SELECT name, comment  
     FROM rates INNER JOIN student USING(bNum)
     WHERE cid = (%s)''', [cid])
     commentsDict = curs.fetchall()
@@ -104,7 +104,7 @@ def getCourses(query, kind):
 def getByTitle(query):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT cnum, title, sem, yr, prof 
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid
                     FROM course 
                     WHERE title like %s''', ['%' + query + '%']) 
                     # question substitute title w/ variable
@@ -114,7 +114,7 @@ def getByTitle(query):
 def getByDepartment(query):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT cnum, title, sem, yr, prof 
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid
                     FROM course 
                     WHERE dep like %s''', ['%' + query + '%']) 
                     # question substitute dep w/ variable
@@ -124,7 +124,7 @@ def getByDepartment(query):
 def getByCnum(query):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT cnum, title, sem, yr, prof 
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid 
                     FROM course 
                     WHERE cnum like %s''', ['%' + query + '%']) 
                     # question substitute cnum w/ variable

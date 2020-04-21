@@ -47,7 +47,7 @@ def search():
 
     # One result: redirect user to specific course page
     elif len(courses) == 1: 
-        return redirect(url_for(showCourse, cid = courses['cid']))
+        return redirect(url_for('showCourse', cid = courses[0]['cid']))
     
     # Multiple results: display all the results
     else: 
@@ -56,9 +56,9 @@ def search():
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
     if request.method == 'GET':
-        basics = db.getBasics(cid)
-        avgRatings = db.getAvgRatings(cid)
-        comments = db.getComments(cid)
+        basics = functions.getBasics(cid)
+        avgRatings = functions.getAvgRatings(cid)
+        comments = functions.getComments(cid)
         print('basics: ')
         print(basics)
         print('avgRatings: ')
@@ -84,8 +84,8 @@ def showCourse(cid):
             comment = request.form.get('new_comment')
             makeRatings(bNum, cid, rR, uR, dR, eR, hW, comment)
             #have to recalculate the ratings and fetch the comments again
-            avgRatings = db.getAvgRatings(cid)
-            comments = db.getComments(cid)
+            avgRatings = functions.getAvgRatings(cid)
+            comments = functions.getComments(cid)
             #now we render the page again
             return render_templates('course_page.html', title=basics['title'],
             cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
