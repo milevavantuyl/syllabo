@@ -132,7 +132,7 @@ def getByCnum(query):
     return courses
 
 def getUniqueCourses(courses):
-''' Returns a list of dictionaries with the cnum and titles of all the courses'''
+    ''' Returns a list of dictionaries with the cnum and titles of all the courses'''
     uniqueCourses = []
     cnums = set()
 

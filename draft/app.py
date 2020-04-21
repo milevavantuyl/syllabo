@@ -39,7 +39,7 @@ def search():
     kind = request.args.get('type')
 
     allCourses = functions.getCourses(search, kind)
-    uniqueCourses = getUniqueCourses(courses)
+    uniqueCourses = functions.getUniqueCourses(allCourses)
 
     # No results: redirect user to create a new course
     if len(allCourses) == 0:
@@ -48,7 +48,7 @@ def search():
 
     # One result: redirect user to specific course page
     elif len(allCourses) == 1: 
-        return redirect(url_for(showCourse, cid = allCourses[0]['cid']))
+        return redirect(url_for('showCourse', cid = allCourses[0]['cid']))
     
     # Multiple results: display all the results
     else: 
