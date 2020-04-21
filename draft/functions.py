@@ -131,6 +131,23 @@ def getByCnum(query):
     courses = curs.fetchall()
     return courses
 
+def getUniqueCourses(courses):
+''' Returns a list of dictionaries with the cnum and titles of all the courses'''
+    uniqueCourses = []
+    cnums = set()
+
+    for course in courses: 
+        # Get course information
+        cnum = course['cnum']
+        title = course.get('title', 'NULL')
+
+        # Add course information (if not already present)
+        if cnum not in cnums: 
+            cnums.add(cnum)
+            uniqueCourses.append({'cnum': cnum, 'title': title})
+
+    return uniqueCourses
+
 # Safiya's functions:
 def getCourseInfo():
     title = request.form.get('course-title')
@@ -155,7 +172,4 @@ def insertCourse(val):
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
-   print(getCourses('database', 'title'))
-   print(getCourses('CS 2', 'cnum'))
-   print(getCourses('ench', 'dep'))
-
+   

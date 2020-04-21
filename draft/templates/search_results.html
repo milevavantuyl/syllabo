@@ -2,9 +2,9 @@
 
 {% block main_content %}
     <h1> Results for search query: {{query}} </h1>
-    
-    {% for course in courses %}
-        <h3 class="course_header"> {{course.cnum}}: {{course.title}} </h3>
+
+    {% for cnum in cnums %}
+        <h3 class="course_header"> {{cnum}}: {{course.title}} </h3>
         <!-- Should I aggregate all the ratings (not just overall rating?-->
         <p>overall rating: {{rating}}</p>
         <p>sections:<p>
