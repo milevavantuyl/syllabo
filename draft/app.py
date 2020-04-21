@@ -21,7 +21,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    return render_template('home.html',title='Syllabo')
+    return render_template('home.html', courses = functions.getRecommended())
 
 @app.route('/create/', methods=['GET','POST'])
 def createCourse():
@@ -67,7 +67,7 @@ def showCourse(cid):
         print(avgRatings)
         print('comments: ')
         print(comments)
-        return render_templates('course_page.html', title=basics['title'],
+        return render_template('course_page.html', title=basics['title'],
             cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
             yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
             web=basics['web'], usefullRate=avgRatings['usefullRate'], 

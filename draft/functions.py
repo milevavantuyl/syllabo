@@ -169,6 +169,14 @@ def insertCourse(val):
     [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
     conn.commit()
 
+def getRecommended():
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT course.cid, course.title FROM course LIMIT 3''')
+    results = curs.fetchall()
+    return results
+    
+
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
