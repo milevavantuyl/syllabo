@@ -42,7 +42,7 @@ def getComments(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT username, comment  
+    SELECT name, comment  
     FROM rates INNER JOIN student USING(bNum)
     WHERE cid = (%s)''', [cid])
     commentsDict = curs.fetchall()
@@ -91,6 +91,7 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
     WHERE cid = (%s)''', [title, dep, cnum, crn, syl, web, yr, sem, prof, cid])
     conn.commit()
 
+
 # Safiya's functions:
 def getCourseInfo():
     title = request.form.get('course-title')
@@ -110,7 +111,12 @@ def insertCourse(val):
     INSERT into course(title, dep, cnum, crn, web, yr, sem, prof)
     VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
     [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
-    conn.commit()
+    curs.execute('''
+    SELECT cid 
+    FROM course
+    WHERE title = %s ''', [val[0]])
+    cidTuple = curs.fetchone()
+    return cidTuple[0]
 
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf

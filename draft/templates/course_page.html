@@ -7,8 +7,8 @@
 {% block main_content %}
 
   <p>Missing or outdated information? <a href="/courses/{{cid}}/update">Update this course</a></p>
-    <h3>"{{title}}"</h3>
-    <h3>"{{cnum}}"</h3>
+    <h3>{{title}}</h3>
+    <h3>{{cnum}}</h3>
     <table id="basics" style="width:100%">
         <tr>
           <th>Logistics</th>
@@ -23,12 +23,12 @@
             <td>{{prof}}</td>
         </tr>
         <tr>
-          <td>Year</td>
-          <td>{{yr}}</td>
-        </tr>
-        <tr>
           <td>Semester</td>
           <td>{{sem}}</td>
+        </tr>
+        <tr>
+          <td>Year</td>
+          <td>{{yr}}</td>
         </tr>
         <tr>
           <td>CRN</td>
@@ -78,84 +78,64 @@
     	{% endfor %}
     </table> 
 
-<h3>How would you rate this course?</h3>
+    <h3>How would you rate this course?</h3>
 
-<form action="rate" method="POST">
-	<p> On a scale from 1-5, 1 being useless and 5 being most useful, how useful do you find {{cnum}} is for the {{dep}} major?</p>
-  <input type="radio" id="usefulRate" name="1" value="1">
-  <label for="1">1</label>
-  <input type="radio" id="usefulRate" name="2" value="2">
-  <label for="2">2</label>
-  <input type="radio" id="usefulRate" name="3" value="3">
-  <label for="1">3</label>
-  <input type="radio" id="usefulRate" name="4" value="4">
-  <label for="2">4</label>
-  <input type="radio" id="usefulRate" name="5" value="5">
-  <label for="2">5</label><br>
-<p> On a scale from 1-5, 1 being very easy and 5 being very challenging, how difficult did you find the material for {{cnum}}?</p> 
-<input type="radio" id="diffRate" name="1" value="1">
-  <label for="1">1</label>
-  <input type="radio" id="diffRate" name="2" value="2">
-  <label for="2">2</label>
-  <input type="radio" id="diffRate" name="3" value="3">
-  <label for="1">3</label>
-  <input type="radio" id="diffRate" name="4" value="4">
-  <label for="2">4</label>
-  <input type="radio" id="diffRate" name="5" value="5">
-  <label for="2">5</label><br>
- <p> On a scale from 1-5, 1 being irrelevant and 5 being most relevant, how relevant did you find the course assignments for {{cnum}}?</p> 
-<input type="radio" id="relevRate" name="1" value="1">
-  <label for="1">1</label>
-  <input type="radio" id="relevRate" name="2" value="2">
-  <label for="2">2</label>
-  <input type="radio" id="relevRate" name="3" value="3">
-  <label for="1">3</label>
-  <input type="radio" id="relevRate" name="4" value="4">
-  <label for="2">4</label>
-  <input type="radio" id="relevRate" name="5" value="5">
-  <label for="2">5</label><br>
-   <p> On a scale from 1-5, 1 being extremely vague and 5 being crystal clear, how clear did you find Professor  {{prof}}'s expectations of students for {{cnum}}?</p> 
-<input type="radio" id="expectRate" name="1" value="1">
-  <label for="1">1</label>
-  <input type="radio" id="expectRate" name="2" value="2">
-  <label for="2">2</label>
-  <input type="radio" id="expectRate" name="3" value="3">
-  <label for="1">3</label>
-  <input type="radio" id="expectRate" name="4" value="4">
-  <label for="2">4</label>
-  <input type="radio" id="expectRate" name="5" value="5">
-  <label for="2">5</label><br>
-       <p> On a scale from 1-5, 1 being hardly requiring any time at all and 5 being your most time consuming course ever, how demanding of your time did you find {{cnum}}?</p> 
-<input type="radio" id="hoursWk" name="1" value="1">
-  <label for="1">1</label>
-  <input type="radio" id="hoursWk" name="2" value="2">
-  <label for="2">2</label>
-  <input type="radio" id="hoursWk" name="3" value="3">
-  <label for="1">3</label>
-  <input type="radio" id="hoursWk" name="4" value="4">
-  <label for="2">4</label>
-  <input type="radio" id="hoursWk" name="5" value="5">
-  <label for="2">5</label><br>
- <p> On average, how many hours per week did you spend on assignments, class preparation, and study for {{title}}?</p> 
-<input type="radio" id="hoursWk" name="1" value="1">
-  <label for="1">1</label>
-  <input type="radio" id="hoursWk" name="2" value="2">
-  <label for="2">2</label>
-  <input type="radio" id="hoursWk" name="3" value="3">
-  <label for="1">3</label>
-  <input type="radio" id="hoursWk" name="4" value="4">
-  <label for="2">4</label>
-  <input type="radio" id="hoursWk" name="5" value="5">
-  <label for="2">5</label><br><br>
-  
-
-<label for="new_comment">Is there anything you'd like to share about {{cnum}}, {{title}}?</label>
-        <p><textarea id="new_comment"
-                     name="new_comment"
-                     rows="6" cols="70"></textarea></p>
-<input type="submit" value="Submit">
-</form>
-
-
- 
-{% endblock %}
+    <form method=POST action="/course/">
+      
+      <label for="usefulRate"><p> On a scale from 1-5, 1 being useless and 5 being 
+        most useful, how useful do you find {{cnum}} is for the {{dep}} major?</p></label>
+      <select id="usefulRate" name = "usefulRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      
+      <label for="diffRate"><p> On a scale from 1-5, 1 being very easy and 5 being
+        very challenging, how difficult did you find the material for {{cnum}}?</p></label>
+      <select id="diffRate" name = "diffRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="relevRate"><p> On a scale from 1-5, 1 being irrelevant and 5 being 
+        most relevant, how relevant did you find the course assignments for {{cnum}}?</p></label>
+      <select id="relevRate" name = "relevRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="expectRate"><p> On a scale from 1-5, 1 being extremely vague and 5 being crystal clear, how clear did you find Professor {{prof}}'s expectations of students for {{cnum}}?</p></label>
+      <select id="expectRate" name = "expectRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="hoursWk"><p> On a scale from 1-5, 1 being hardly requiring any time at all
+         and 5 being your most time consuming course ever, how demanding of your time did you find {{cnum}}?</p></label> 
+      <select id="hoursWk" name = "hoursRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+        
+      
+      <label for="new_comment"><p>Is there anything you'd like to share about {{cnum}}: {{title}}?</p></label>
+              <p><textarea id="new_comment"
+                          name="new_comment"
+                          rows="6" cols="70"></textarea></p>
+      <input type="submit" name="submit" value="rate">
+    </form>
+    
+    
+     
+    {% endblock %}

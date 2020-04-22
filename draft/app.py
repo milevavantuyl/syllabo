@@ -29,54 +29,60 @@ def createCourse():
         return render_template('create_course.html')
     else:
         values = functions.getCourseInfo()
-        functions.insertCourse(values)
-        flash('Your updates have been made, insert another course!')
-        return redirect(url_for('createCourse'))
+        cid = functions.insertCourse(values)
+        print("app.py says that cid is....")
+        print(cid)
+        flash('Thanks for adding a course!')
+        return redirect(url_for('showCourse', cid = cid))
 
 
-@app.route('/course/<cid>', methods=['GET','POST'])
+@app.route('/course/<int:cid>', methods=['GET','POST'])
 def showCourse(cid):
+    basics = functions.getBasics(cid)
     if request.method == 'GET':
-        basics = db.getBasics(cid)
-        avgRatings = db.getAvgRatings(cid)
-        comments = db.getComments(cid)
+        avgRatings = functions.getAvgRatings(cid)
+        comments = functions.getComments(cid)
         print('basics: ')
         print(basics)
         print('avgRatings: ')
         print(avgRatings)
         print('comments: ')
         print(comments)
-        return render_templates('course_page.html', title=basics['title'],
+        return render_template('course_page.html', title=basics['title'],
             cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
             yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
-            web=basics['web'], usefullRate=avgRatings['usefullRate'], 
-            diffRate=avgRatings['diffRate'], relevRate=avgRatings['relevRate'], 
-            expectRate=avgRatings['expectRate'], hoursWk=avgRatings['hoursWk'],
+            web=basics['web'], usefulRate=avgRatings['AVG(usefulRate)'], 
+            diffRate=avgRatings['AVG(diffRate)'], relevRate=avgRatings['AVG(relevRate)'], 
+            expectRate=avgRatings['AVG(expectRate)'], hoursWk=avgRatings['AVG(hoursWk)'],
             comments=comments)
     elif request.method == 'POST':
         #user is rating (which includes commenting) the course.
-        action = request.form.get("submit")
-        if action == 'rate':
-            uR = request.form.get('usefulRate')
-            dR = request.form.get('diffRate')
-            rR = request.form.get('relevRate')
-            eR = request.form.get('expectRate')
-            hW = request.form.get('hoursWk')
-            comment = request.form.get('new_comment')
-            makeRatings(bNum, cid, rR, uR, dR, eR, hW, comment)
-            #have to recalculate the ratings and fetch the comments again
-            avgRatings = db.getAvgRatings(cid)
-            comments = db.getComments(cid)
-            #now we render the page again
-            return render_templates('course_page.html', title=basics['title'],
+        
+        
+        
+    
+        uR = request.form.get('usefulRate')
+        dR = request.form.get('diffRate')
+        rR = request.form.get('relevRate')
+        eR = request.form.get('expectRate')
+        hW = request.form.get('hoursWk')
+        comment = request.form.get('new_comment')
+        functions.makeRatings(bNum, cid, rR, uR, dR, eR, hW, comment)
+        #have to recalculate the ratings and fetch the comments again
+        avgRatings = functions.getAvgRatings(cid)
+        print(avgRatings)
+        comments = functions.getComments(cid)
+        print(getComments)
+        #now we render the page again
+        return render_template('course_page.html', title=basics['title'],
             cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
             yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
-            web=basics['web'], usefullRate=avgRatings['usefullRate'], 
-            diffRate=avgRatings['diffRate'], relevRate=avgRatings['relevRate'], 
-            expectRate=avgRatings['expectRate'], hoursWk=avgRatings['hoursWk'],
+            web=basics['web'], usefulRate=avgRatings['AVG(usefulRate)'], 
+            diffRate=avgRatings['AVG(diffRate)'], relevRate=avgRatings['AVG(relevRate)'], 
+            expectRate=avgRatings['AVG(expectRate)'], hoursWk=avgRatings['AVG(hoursWk)'],
             comments=comments)
 
-@app.route('/courses/<cid>/update', methods=['GET','POST'])
+@app.route('/course/<cid>/update', methods=['GET','POST'])
 def updateCourse(cid):
     if request.method == 'GET':
         print("hello")
