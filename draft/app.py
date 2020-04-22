@@ -19,6 +19,9 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024 # 1 MB
+
 @app.route('/')
 def index():
     return render_template('home.html', courses = functions.getRecommended())
@@ -29,9 +32,21 @@ def createCourse():
         return render_template('create_course.html')
     else:
         values = functions.getCourseInfo()
-        functions.insertCourse(values)
+        courseInfo = functions.insertCourse(values)
+        cid = functions.getCID(courseInfo)
         flash('Your updates have been made, insert another course!')
-        return redirect(url_for('createCourse'))
+        return redirect(url_for('uploadSyllabus', n = cid))
+
+@app.route('/upload/<int:n>', methods=['GET','POST'])
+def uploadSyllabus(n):
+    if request.method == 'GET':
+        return render_template('syl_upload.html')
+    else:
+        functions.fileUpload()
+        return render_template('home.html')
+    
+    
+    
 
 @app.route('/search/', methods = ['GET']) 
 def search(): 

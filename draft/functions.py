@@ -171,13 +171,40 @@ def insertCourse(val):
     VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
     [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
     conn.commit()
+    return [val[0], val[5], val[6], val[7]]
+
+def getCID(val):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    select cid from course where title = %s and yr= %s and sem= %s 
+    and prof = %s''',
+    [val[0], val[1], val[2], val[3]])
+    result = curs.fetchone()
+    return result['cid']
 
 def getRecommended():
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT course.cid, course.title FROM course LIMIT 3''')
+    curs.execute('''SELECT course.cid, course.title 
+    FROM course LIMIT 3''')
     results = curs.fetchall()
     return results
+
+def fileUpload():
+    try:
+        f = request.files['file']
+        pdf = f.read()
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        curs.execute(
+            '''insert into course(syl) values (%s) where title = %s and
+            yr = %s and sem = %s and prof = %s''',
+            [pdf, title, yr, sem, prof])
+        conn.commit()
+        flash('Upload successful')
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
     
 
 if __name__ == '__main__':
