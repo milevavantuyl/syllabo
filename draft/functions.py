@@ -93,7 +93,7 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
 
 # Mileva's functions:
 
-def getAllCourses(query, kind):
+def getAllSections(query, kind):
     if (kind == "title"):
         return (getByTitle(query))
     elif (kind == "dep"):
@@ -137,14 +137,17 @@ def getCourses(courses):
     cnums = set()
 
     for course in courses: 
-        # Get course information
         cnum = course['cnum']
         title = course.get('title', 'NULL')
 
         # Add course information (if not already present)
+        # Assumption: Course title is based on first found instance of course
         if cnum not in cnums: 
             cnums.add(cnum)
             uniqueCourses.append({'cnum': cnum, 'title': title})
+
+    # Sorts them in alphabetical order by cnum
+    uniqueCourses.sort(key = lambda course: course['cnum'].lower())
 
     return uniqueCourses
 

@@ -38,28 +38,24 @@ def search():
     search = request.args.get('search')
     kind = request.args.get('type')
 
-    allCourses = functions.getAllCourses(search, kind)
-    print(allCourses)
+    allSections = functions.getAllSections(search, kind)
 
     # Sort these alphabetically by cnum
-    courses = functions.getCourses(allCourses)
-    print(courses)
-
-    sections = [{'CS 230': [{'cnum': 'CS 230', 'title': 'Data Structures', 'sem': 'Fall', 'yr': 2019, 'prof': 'Takis Metaxas', 'cid': 7}]}]
+    allCourses = functions.getCourses(allSections)
 
     # No results: redirect user to create a new course
-    if len(allCourses) == 0:
+    if len(allSections) == 0:
         flash ('No results for {} in the database.'.format(search))
         return redirect(url_for('createCourse')) 
 
     # One result: redirect user to specific course page
-    elif len(allCourses) == 1: 
-        return redirect(url_for('showCourse', cid = allCourses[0]['cid']))
+    elif len(allSections) == 1: 
+        return redirect(url_for('showCourse', cid = allSections[0]['cid']))
     
     # Multiple results: display all the results
     else: 
         return render_template('search_results.html', 
-        courses = courses, allCourses = allCourses, query = search)
+        allCourses = allCourses, allSections = allSections, query = search)
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
@@ -67,12 +63,12 @@ def showCourse(cid):
         basics = functions.getBasics(cid)
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
-        # print('basics: ')
-        # print(basics)
-        # print('avgRatings: ')
-        # print(avgRatings)
-        # print('comments: ')
-        # print(comments)
+        print('basics: ')
+        print(basics)
+        print('avgRatings: ')
+        print(avgRatings)
+        print('comments: ')
+        print(comments)
         return render_template('course_page.html', title=basics['title'],
             cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
             yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
