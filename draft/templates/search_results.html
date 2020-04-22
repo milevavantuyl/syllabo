@@ -3,16 +3,14 @@
 {% block main_content %}
     <h1> Results for search query: {{query}} </h1>
 
-    {% for cnum in cnums %}
-        <h3 class="course_header"> {{cnum}}: {{course.title}} </h3>
-        <!-- Should I aggregate all the ratings (not just overall rating?-->
-        <p>overall rating: {{rating}}</p>
-        <p>sections:<p>
-        {% for section in course %}
-        <ul>
-            <li><a href="#/course/cid">{{section.sem}} {{section.yr}}, {{section.prof}}</a></li>
-        </ul>
+    {% for course in courses %}
+        <h2>{{course.cnum}}: {{course.title}} {{course.cnum}}</h2>
+        {% for section in allCourses %}
+            {% if course.cnum == section.cnum %}
+            <ul>
+                <li> <a href='/course/{{section.cid}}'>{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
+            </ul>
+            {% endif %}
         {% endfor %}
     {% endfor %}
-
 {% endblock %}

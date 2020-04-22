@@ -93,7 +93,7 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
 
 # Mileva's functions:
 
-def getCourses(query, kind):
+def getAllCourses(query, kind):
     if (kind == "title"):
         return (getByTitle(query))
     elif (kind == "dep"):
@@ -131,7 +131,7 @@ def getByCnum(query):
     courses = curs.fetchall()
     return courses
 
-def getUniqueCourses(courses):
+def getCourses(courses):
     ''' Returns a list of dictionaries with the cnum and titles of all the courses'''
     uniqueCourses = []
     cnums = set()

@@ -38,8 +38,14 @@ def search():
     search = request.args.get('search')
     kind = request.args.get('type')
 
-    allCourses = functions.getCourses(search, kind)
-    uniqueCourses = functions.getUniqueCourses(allCourses)
+    allCourses = functions.getAllCourses(search, kind)
+    print(allCourses)
+
+    # Sort these alphabetically by cnum
+    courses = functions.getCourses(allCourses)
+    print(courses)
+
+    sections = [{'CS 230': [{'cnum': 'CS 230', 'title': 'Data Structures', 'sem': 'Fall', 'yr': 2019, 'prof': 'Takis Metaxas', 'cid': 7}]}]
 
     # No results: redirect user to create a new course
     if len(allCourses) == 0:
@@ -53,7 +59,7 @@ def search():
     # Multiple results: display all the results
     else: 
         return render_template('search_results.html', 
-        uniqueCourses = uniqueCourses, courses = allCourses, query = search)
+        courses = courses, allCourses = allCourses, query = search)
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
@@ -61,12 +67,12 @@ def showCourse(cid):
         basics = functions.getBasics(cid)
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
-        print('basics: ')
-        print(basics)
-        print('avgRatings: ')
-        print(avgRatings)
-        print('comments: ')
-        print(comments)
+        # print('basics: ')
+        # print(basics)
+        # print('avgRatings: ')
+        # print(avgRatings)
+        # print('comments: ')
+        # print(comments)
         return render_template('course_page.html', title=basics['title'],
             cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
             yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
