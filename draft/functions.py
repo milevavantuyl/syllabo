@@ -29,7 +29,7 @@ def getAvgRatings(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT AVG(relevRate), AVG(usefulRate), AVG(diffRate), AVG(expectRate), AVG(hoursWk)
+    SELECT AVG(relevRate) AS r, AVG(usefulRate) AS u, AVG(diffRate) AS d, AVG(expectRate) AS e, AVG(hoursWk) AS h
     FROM rates
     WHERE cid = (%s)''', [cid])
     avgRatingsDict = curs.fetchone()
@@ -112,11 +112,9 @@ def insertCourse(val):
     VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
     [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
     curs.execute('''
-    SELECT cid 
-    FROM course
-    WHERE title = %s ''', [val[0]])
-    cidTuple = curs.fetchone()
-    return cidTuple[0]
+    SELECT LAST_INSERT_ID()''')
+    cid = curs.fetchone()
+    return cid[0]
 
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf

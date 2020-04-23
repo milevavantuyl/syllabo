@@ -18,7 +18,8 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
-
+# fake bNum for now 4/23/2020 draft version - pre login implementation
+FOObNum = '20000000'
 @app.route('/')
 def index():
     return render_template('home.html',title='Syllabo')
@@ -36,51 +37,27 @@ def createCourse():
         return redirect(url_for('showCourse', cid = cid))
 
 
-@app.route('/course/<int:cid>', methods=['GET','POST'])
+@app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
     basics = functions.getBasics(cid)
     if request.method == 'GET':
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
-        print('basics: ')
-        print(basics)
-        print('avgRatings: ')
-        print(avgRatings)
-        print('comments: ')
-        print(comments)
-        return render_template('course_page.html', title=basics['title'],
-            cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
-            yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
-            web=basics['web'], usefulRate=avgRatings['AVG(usefulRate)'], 
-            diffRate=avgRatings['AVG(diffRate)'], relevRate=avgRatings['AVG(relevRate)'], 
-            expectRate=avgRatings['AVG(expectRate)'], hoursWk=avgRatings['AVG(hoursWk)'],
-            comments=comments)
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
     elif request.method == 'POST':
         #user is rating (which includes commenting) the course.
-        
-        
-        
-    
         uR = request.form.get('usefulRate')
         dR = request.form.get('diffRate')
         rR = request.form.get('relevRate')
         eR = request.form.get('expectRate')
         hW = request.form.get('hoursWk')
         comment = request.form.get('new_comment')
-        functions.makeRatings(bNum, cid, rR, uR, dR, eR, hW, comment)
+        functions.makeRatings(FOObNum, cid, rR, uR, dR, eR, hW, comment)
         #have to recalculate the ratings and fetch the comments again
         avgRatings = functions.getAvgRatings(cid)
-        print(avgRatings)
         comments = functions.getComments(cid)
-        print(getComments)
         #now we render the page again
-        return render_template('course_page.html', title=basics['title'],
-            cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
-            yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
-            web=basics['web'], usefulRate=avgRatings['AVG(usefulRate)'], 
-            diffRate=avgRatings['AVG(diffRate)'], relevRate=avgRatings['AVG(relevRate)'], 
-            expectRate=avgRatings['AVG(expectRate)'], hoursWk=avgRatings['AVG(hoursWk)'],
-            comments=comments)
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
 def updateCourse(cid):

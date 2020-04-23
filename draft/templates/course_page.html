@@ -6,9 +6,10 @@
 
 {% block main_content %}
 
+
   <p>Missing or outdated information? <a href="/courses/{{cid}}/update">Update this course</a></p>
-    <h3>{{title}}</h3>
-    <h3>{{cnum}}</h3>
+    <h3>{{basics.title}}</h3>
+    <h3>{{basics.cnum}}</h3>
     <table id="basics" style="width:100%">
         <tr>
           <th>Logistics</th>
@@ -16,23 +17,23 @@
         </tr>
         <tr>
             <td>Department</td>
-            <td>{{dep}}</td>
+            <td>{{basics.dep}}</td>
         </tr>
         <tr>
             <td>Professor</td>
-            <td>{{prof}}</td>
+            <td>{{basics.prof}}</td>
         </tr>
         <tr>
           <td>Semester</td>
-          <td>{{sem}}</td>
+          <td>{{basics.sem}}</td>
         </tr>
         <tr>
           <td>Year</td>
-          <td>{{yr}}</td>
+          <td>{{basics.yr}}</td>
         </tr>
         <tr>
           <td>CRN</td>
-          <td>{{crn}}</td>
+          <td>{{basics.crn}}</td>
         </tr>
       </table>
       <table id="ratings" style="width:100%">
@@ -42,29 +43,29 @@
         </tr>
         <tr>
             <td>Usefulness for major</td>
-            <td>{{usefulRate}}</td>
+            <td>{{avgRatings.u}}</td>
         </tr>
         <tr>
             <td>Difficulty</td>
-            <td>{{diffRate}}</td>
+            <td>{{avgRatings.d}}</td>
         </tr>
         <tr>
           <td>Relevance of course assignments</td>
-          <td>{{relevRate}}</td>
+          <td>{{avgRatings.r}}</td>
         </tr>
         <tr>
           <td>Expectations were clearly defined</td>
-          <td>{{expectRate}}</td>
+          <td>{{avgRatings.e}}</td>
         </tr>
         <tr>
           <td>Hours per week spent on coursework</td>
-          <td>{{hoursWk}}</td>
+          <td>{{avgRatings.h}}</td>
         </tr>
 	  </table>
-		<a href={{syl}}><h4>Syllabus PDF</h4></a>
+		<a href={{basics.syl}}><h4>Syllabus PDF</h4></a>
     	
     	<h4>Course Website</h4>
-    	 <iframe src={{web}} width="80%" height="400px">
+    	 <iframe src={{basics.web}} width="80%" height="400px">
     	</iframe>
     	
       <p>How did other students find this course?</p>
@@ -72,15 +73,15 @@
       <table id="comments" style="width:100%">
       {% for comment in comments %}
           <tr>
-            <td>"{{comment.username}}"</td>
-            <td>"{{comment.comment}}"</td>
+            <td>{{comment.name}}</td>
+            <td>{{comment.comment}}</td>
         </tr>
     	{% endfor %}
     </table> 
 
     <h3>How would you rate this course?</h3>
 
-    <form method=POST action="/course/">
+    <form method=POST action="">
       
       <label for="usefulRate"><p> On a scale from 1-5, 1 being useless and 5 being 
         most useful, how useful do you find {{cnum}} is for the {{dep}} major?</p></label>
@@ -120,7 +121,7 @@
       </select>
       <label for="hoursWk"><p> On a scale from 1-5, 1 being hardly requiring any time at all
          and 5 being your most time consuming course ever, how demanding of your time did you find {{cnum}}?</p></label> 
-      <select id="hoursWk" name = "hoursRate">
+      <select id="hoursWk" name = "hoursWk">
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
@@ -129,7 +130,7 @@
       </select>
         
       
-      <label for="new_comment"><p>Is there anything you'd like to share about {{cnum}}: {{title}}?</p></label>
+      <label for="new_comment"><p>Is there anything you'd like to share about {{basics.cnum}}: {{basics.title}}?</p></label>
               <p><textarea id="new_comment"
                           name="new_comment"
                           rows="6" cols="70"></textarea></p>
