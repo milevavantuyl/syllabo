@@ -22,7 +22,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 FOObNum = '20000000'
 @app.route('/')
 def index():
-    return render_template('home.html',title='Syllabo')
+    return render_template('home.html', courses = functions.getRecommended())
 
 @app.route('/create/', methods=['GET','POST'])
 def createCourse():
@@ -30,12 +30,42 @@ def createCourse():
         return render_template('create_course.html')
     else:
         values = functions.getCourseInfo()
-        cid = functions.insertCourse(values)
-        print("app.py says that cid is....")
-        print(cid)
-        flash('Thanks for adding a course!')
-        return redirect(url_for('showCourse', cid = cid))
+        courseInfo = functions.insertCourse(values)
+        cid = functions.getCID(courseInfo)
+        flash('Your updates have been made, insert another course!')
+        return redirect(url_for('uploadSyllabus', n = cid))
 
+@app.route('/upload/<int:n>', methods=['GET','POST'])
+def uploadSyllabus(n):
+    if request.method == 'GET':
+        return render_template('syl_upload.html')
+    else:
+        functions.fileUpload()
+        return render_template('home.html')
+
+@app.route('/search/', methods = ['GET']) 
+def search(): 
+    search = request.args.get('search')
+    kind = request.args.get('type')
+
+    allSections = functions.getAllSections(search, kind)
+
+    # Sort these alphabetically by cnum
+    allCourses = functions.getCourses(allSections)
+
+    # No results: redirect user to create a new course
+    if len(allSections) == 0:
+        flash ('No results for {} in the database.'.format(search))
+        return redirect(url_for('createCourse')) 
+
+    # One result: redirect user to specific course page
+    elif len(allSections) == 1: 
+        return redirect(url_for('showCourse', cid = allSections[0]['cid']))
+    
+    # Multiple results: display all the results
+    else: 
+        return render_template('search_results.html', 
+        allCourses = allCourses, allSections = allSections, query = search)
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
