@@ -92,6 +92,66 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
     conn.commit()
 
 
+# Mileva's functions:
+
+def getAllSections(query, kind):
+    if (kind == "title"):
+        return (getByTitle(query))
+    elif (kind == "dep"):
+        return (getByDepartment(query))
+    else:
+        return (getByCnum(query))
+
+def getByTitle(query):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid
+                    FROM course 
+                    WHERE title like %s''', ['%' + query + '%']) 
+                    # question substitute title w/ variable
+    courses = curs.fetchall()
+    return courses
+
+def getByDepartment(query):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid
+                    FROM course 
+                    WHERE dep like %s''', ['%' + query + '%']) 
+                    # question substitute dep w/ variable
+    courses = curs.fetchall()
+    return courses
+
+def getByCnum(query):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid 
+                    FROM course 
+                    WHERE cnum like %s''', ['%' + query + '%']) 
+                    # question substitute cnum w/ variable
+    courses = curs.fetchall()
+    return courses
+
+def getCourses(courses):
+    ''' Returns a list of dictionaries with the cnum and titles of all the courses'''
+    uniqueCourses = []
+    cnums = set()
+
+    for course in courses: 
+        cnum = course['cnum']
+        title = course.get('title', 'NULL')
+
+        # Add course information (if not already present)
+        # Assumption: Course title is based on first found instance of course
+        if cnum not in cnums: 
+            cnums.add(cnum)
+            uniqueCourses.append({'cnum': cnum, 'title': title})
+
+    # Sorts them in alphabetical order by cnum
+    uniqueCourses.sort(key = lambda course: course['cnum'].lower())
+
+    return uniqueCourses
+
 # Safiya's functions:
 def getCourseInfo():
     title = request.form.get('course-title')
@@ -111,10 +171,42 @@ def insertCourse(val):
     INSERT into course(title, dep, cnum, crn, web, yr, sem, prof)
     VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
     [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
+    conn.commit()
+    return [val[0], val[5], val[6], val[7]]
+
+def getCID(val):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
     curs.execute('''
-    SELECT LAST_INSERT_ID()''')
-    cid = curs.fetchone()
-    return cid[0]
+    select cid from course where title = %s and yr= %s and sem= %s 
+    and prof = %s''',
+    [val[0], val[1], val[2], val[3]])
+    result = curs.fetchone()
+    return result['cid']
+
+def getRecommended():
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT course.cid, course.title 
+    FROM course LIMIT 3''')
+    results = curs.fetchall()
+    return results
+
+def fileUpload():
+    try:
+        f = request.files['file']
+        pdf = f.read()
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        curs.execute(
+            '''insert into course(syl) values (%s) where title = %s and
+            yr = %s and sem = %s and prof = %s''',
+            [pdf, title, yr, sem, prof])
+        conn.commit()
+        flash('Upload successful')
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
+    
 
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
