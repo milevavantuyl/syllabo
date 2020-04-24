@@ -48,14 +48,6 @@ def search():
     search = request.args.get('search')
     kind = request.args.get('type')
 
-<<<<<<< HEAD
-=======
-@app.route('/search/', methods = ['GET']) 
-def search(): 
-    search = request.args.get('search')
-    kind = request.args.get('type')
-
->>>>>>> c60aa6853c423fbd2febc3d7fe23ce71d2b615d6
     allSections = functions.getAllSections(search, kind)
 
     # Sort these alphabetically by cnum
@@ -79,7 +71,6 @@ def search():
 def showCourse(cid):
     basics = functions.getBasics(cid)
     if request.method == 'GET':
-<<<<<<< HEAD
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
         return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
@@ -99,48 +90,6 @@ def showCourse(cid):
         return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
-=======
-        basics = functions.getBasics(cid)
-        avgRatings = functions.getAvgRatings(cid)
-        comments = functions.getComments(cid)
-        print('basics: ')
-        print(basics)
-        print('avgRatings: ')
-        print(avgRatings)
-        print('comments: ')
-        print(comments)
-        return render_template('course_page.html', title=basics['title'],
-            cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
-            yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
-            web=basics['web'], usefullRate=avgRatings['usefullRate'], 
-            diffRate=avgRatings['diffRate'], relevRate=avgRatings['relevRate'], 
-            expectRate=avgRatings['expectRate'], hoursWk=avgRatings['hoursWk'],
-            comments=comments)
-    elif request.method == 'POST':
-        #user is rating (which includes commenting) the course.
-        action = request.form.get("submit")
-        if action == 'rate':
-            uR = request.form.get('usefulRate')
-            dR = request.form.get('diffRate')
-            rR = request.form.get('relevRate')
-            eR = request.form.get('expectRate')
-            hW = request.form.get('hoursWk')
-            comment = request.form.get('new_comment')
-            makeRatings(bNum, cid, rR, uR, dR, eR, hW, comment)
-            #have to recalculate the ratings and fetch the comments again
-            avgRatings = functions.getAvgRatings(cid)
-            comments = functions.getComments(cid)
-            #now we render the page again
-            return render_templates('course_page.html', title=basics['title'],
-            cnum=basics['cnum'], dep=basics['dep'], prof=basics['prof'],
-            yr=basics['yr'], sem=basics['sem'], crn=basics['crn'], syl=basics['syl'],
-            web=basics['web'], usefullRate=avgRatings['usefullRate'], 
-            diffRate=avgRatings['diffRate'], relevRate=avgRatings['relevRate'], 
-            expectRate=avgRatings['expectRate'], hoursWk=avgRatings['hoursWk'],
-            comments=comments)
-
-@app.route('/courses/<cid>/update', methods=['GET','POST'])
->>>>>>> c60aa6853c423fbd2febc3d7fe23ce71d2b615d6
 def updateCourse(cid):
     if request.method == 'GET':
         flash("This feature coming soon!")

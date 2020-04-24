@@ -191,7 +191,6 @@ def getRecommended():
     results = curs.fetchall()
     return results
 
-<<<<<<< HEAD
 def fileUpload():
     try:
         f = request.files['file']
@@ -207,16 +206,6 @@ def fileUpload():
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
         
-=======
-def getRecommended():
-    conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT course.cid, course.title FROM course LIMIT 3''')
-    results = curs.fetchall()
-    return results
-    
-
->>>>>>> c60aa6853c423fbd2febc3d7fe23ce71d2b615d6
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
