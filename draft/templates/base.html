@@ -5,7 +5,7 @@
     <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
     <meta name=description content="Syllabo Wellesley Syllabus Database">
     <title> {{title}} </title>
-    <link rel="stylesheet" type="text/css" href="/static/styling.css"> 
+    <link rel="stylesheet" type="text/css" href="/static/style.css"> 
     {% block head_stuff %} {% endblock %}
 </head>
 <body>
@@ -30,14 +30,14 @@
 {% endblock %}
 
 {% block search_bar %}
-<form method="POST" action="/search">
+<form method="GET" action="/search/">
     <p><label>Search: <input type="text" name="search"></label>
         <label>Search by: 
             <select name="type">
                 <option value>select</option>
                 <option value="title">Course Title</option>
-                <option value="department">Course Department</option> 
-                <option value="coursenum">Course Number</option>
+                <option value="dep">Course Department</option> 
+                <option value="cnum">Course Number</option>
             </select>
         </label>
         <input type="submit" value="search"></p>
