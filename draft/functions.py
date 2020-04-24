@@ -92,7 +92,10 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
     conn.commit()
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> sarah
 # Mileva's functions:
 
 def getAllSections(query, kind):

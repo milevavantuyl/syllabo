@@ -92,7 +92,7 @@ def showCourse(cid):
 @app.route('/course/<cid>/update', methods=['GET','POST'])
 def updateCourse(cid):
     if request.method == 'GET':
-        print("hello")
+        flash("This feature coming soon!")
 
 @app.route('/formecho/', methods=['GET','POST'])
 def formecho():
