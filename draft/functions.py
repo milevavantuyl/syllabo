@@ -5,7 +5,12 @@ pymysql functions for Syllabo'''
 # import pymysql.constants.ER
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
+from werkzeug.utils import secure_filename
 import cs304dbi as dbi
+import os
+
+UPLOAD_FOLDER = 'upload_folder'
+ALLOWED_EXTENSIONS = {'pdf'}
 
 # Sarah's functions:
 '''getBasics() returns a dictionary of course information 
@@ -29,7 +34,7 @@ def getAvgRatings(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT AVG(relevRate), AVG(usefulRate), AVG(diffRate), AVG(expectRate), AVG(hoursWk)
+    SELECT AVG(relevRate) AS r, AVG(usefulRate) AS u, AVG(diffRate) AS d, AVG(expectRate) AS e, AVG(hoursWk) AS h
     FROM rates
     WHERE cid = (%s)''', [cid])
     avgRatingsDict = curs.fetchone()
@@ -191,22 +196,22 @@ def getRecommended():
     results = curs.fetchall()
     return results
 
-def fileUpload():
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        
+def saveToDB(x, aFile):
     try:
-        f = request.files['file']
-        pdf = f.read()
         conn = dbi.connect()
         curs = dbi.dict_cursor(conn)
         curs.execute(
-            '''insert into course(syl) values (%s) where title = %s and
-            yr = %s and sem = %s and prof = %s''',
-            [pdf, title, yr, sem, prof])
+            '''insert into syllabi(cid, filename) 
+               values (%s, %s)''', [x, aFile])
         conn.commit()
         flash('Upload successful')
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
-    
-
+        
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
