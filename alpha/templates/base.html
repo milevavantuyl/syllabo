@@ -5,7 +5,7 @@
     <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
     <meta name=description content="Syllabo Wellesley Syllabus Database">
     <title> {{title}} </title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css"> 
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename = '/static/style.css')}}"> 
     {% block head_stuff %} {% endblock %}
 </head>
 <body>
@@ -22,19 +22,18 @@
 
 {% block nav_bar %}
 <ul id="nav_bar">
-    <li><a href="/" id="left_nav_bar">Syllabo</a></li>
-    <li><a href="/create/">Create a Course</a></li>
-    <li><a href="/explore/">Explore Courses</a></li>
-    <li><a href="/profile/">Profile</a></li>
+    <li><a href= "{{url_for('index')}}" id="left_nav_bar">Syllabo</a></li>
+    <li><a href= "{{url_for('createCourse')}}">Create a Course</a></li>
+    <li><a href= "/explore/">Explore Courses</a></li>
+    <li><a href= "/profile/">Profile</a></li>
 </ul>
 {% endblock %}
 
 {% block search_bar %}
-<form method="GET" action="/search/">
-    <p><label>Search: <input type="text" name="search"></label>
+<form method="GET" action="{{url_for('search')}}">
+    <p><label>Search: <input type="text" name="search" required></label>
         <label>Search by: 
             <select name="type">
-                <option value>select</option>
                 <option value="title">Course Title</option>
                 <option value="dep">Course Department</option> 
                 <option value="cnum">Course Number</option>

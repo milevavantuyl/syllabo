@@ -62,7 +62,9 @@ def uploadSyllabus(n):
 @app.route('/search/', methods = ['GET']) 
 def search(): 
     search = request.args.get('search')
-    kind = request.args.get('type')
+    kind = request.args.get('type') 
+    if (not search):
+        flash("missing input - search query is required")
 
     allSections = functions.getAllSections(search, kind)
 
