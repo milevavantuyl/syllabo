@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+    <h1> Results for search query: {{query}} </h1>
+
+    {% for course in allCourses %}
+        <h2>{{course.cnum}}: {{course.title}}</h2>
+        {% for section in allSections %}
+            {% if course.cnum == section.cnum %}
+            <ul>
+                <li> <a href='/course/{{section.cid}}'>{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
+            </ul>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

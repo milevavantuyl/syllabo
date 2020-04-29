@@ -1,0 +1,18 @@
+/* For flashed messages; make them stand out using red and italics */
+
+#messages {
+    color: red;
+    font-style: italic;
+}
+
+h1 {
+    font-size: 200%;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: rgb(20, 18, 150);
+}
+
+h2 {
+    font-size: 150%;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: rgb(7, 103, 158);
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
+    <meta name=description content="Syllabo Wellesley Syllabus Database">
+    <title> {{title}} </title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"> 
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+{% block nav_bar %}
+<ul id="nav_bar">
+    <li><a href="/" id="left_nav_bar">Syllabo</a></li>
+    <li><a href="/create/">Create a Course</a></li>
+    <li><a href="/explore/">Explore Courses</a></li>
+    <li><a href="/profile/">Profile</a></li>
+</ul>
+{% endblock %}
+
+{% block search_bar %}
+<form method="GET" action="/search/">
+    <p><label>Search: <input type="text" name="search"></label>
+        <label>Search by: 
+            <select name="type">
+                <option value>select</option>
+                <option value="title">Course Title</option>
+                <option value="dep">Course Department</option> 
+                <option value="cnum">Course Number</option>
+            </select>
+        </label>
+        <input type="submit" value="search"></p>
+</form>
+{% endblock %}
+
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+
+</body>
+</html>
