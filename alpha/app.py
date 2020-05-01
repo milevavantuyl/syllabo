@@ -61,29 +61,35 @@ def uploadSyllabus(n):
 
 @app.route('/search/', methods = ['GET']) 
 def search(): 
+    conn = dbi.connect()
+
     search = request.args.get('search')
     kind = request.args.get('type') 
-    if (not search):
-        flash("missing input - search query is required")
 
-    allSections = functions.getAllSections(search, kind)
+    # Check kind type is valid
+    if (kind == "title" or kind == "dep" or kind == "cnum"):
+        courseResults = functions.getCourses(conn, search, kind)
+        numSections = functions.numSections(conn, search, kind)
 
-    # Sort these alphabetically by cnum
-    allCourses = functions.getCourses(allSections)
+        # No results: redirect user to create a new course
+        if numSections == 0:
+            flash ('No results for {} in the database.'.format(search))
+            return redirect(url_for('createCourse')) 
 
-    # No results: redirect user to create a new course
-    if len(allSections) == 0:
-        flash ('No results for {} in the database.'.format(search))
-        return redirect(url_for('createCourse')) 
-
-    # One result: redirect user to specific course page
-    elif len(allSections) == 1: 
-        return redirect(url_for('showCourse', cid = allSections[0]['cid']))
+        # One result: redirect user to specific course page
+        elif numSections == 1: 
+            cid = functions.getOneResult(conn, search, kind)
+            return redirect(url_for('showCourse', cid = cid))
+        
+        # Multiple results: display all the results
+        else: 
+            print(courseResults)
+            return render_template('search_results.html', courses = courseResults, query = search)
     
-    # Multiple results: display all the results
+    # Invalid kind type
     else: 
-        return render_template('search_results.html', 
-        allCourses = allCourses, allSections = allSections, query = search)
+        flash ('Invalid value entered for type field.')
+        return redirect(url_for('createCourse')) 
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):

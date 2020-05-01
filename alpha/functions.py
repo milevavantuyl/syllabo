@@ -98,63 +98,60 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
 
 # Mileva's functions:
 
-def getAllSections(query, kind):
-    if (kind == "title"):
-        return (getByTitle(query))
-    elif (kind == "dep"):
-        return (getByDepartment(query))
-    else:
-        return (getByCnum(query))
+''' Input: User search query and kind of query, Output: All courses and sections fitting the query'''
+def getCourses(conn, query, kind):
 
-def getByTitle(query):
-    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    if (kind == "title" or kind == "dep" or kind == "cnum"):
+        curs.execute('''SELECT distinct cnum, title
+                        FROM course
+                        WHERE {} like %s
+                        ORDER BY cnum ASC, title ASC'''.format(kind), ['%' + query + '%']
+                        ) 
+        courses = curs.fetchall()
+
+        # Finds all sections associated with each distinct course
+        for course in courses: 
+            # print("original: {}".format(course))
+            course['sections'] = getSections(conn, course['cnum'], course['title'])
+            # print("Updated: {}".format(course))
+
+        # print("Num {}".format(numSections(conn, query, kind)))
+        return courses  
+
+'''Input: course cnum and title. Output: list of dictionaries containing all
+the information about each course section in sorted order'''
+def getSections(conn, cnum, title): 
     curs = dbi.dict_cursor(conn)
     curs.execute('''SELECT cnum, title, sem, yr, prof, cid
                     FROM course 
-                    WHERE title like %s''', ['%' + query + '%']) 
-                    # question substitute title w/ variable
-    courses = curs.fetchall()
-    return courses
+                    WHERE cnum = %s and title = %s
+                    ORDER BY yr''', [cnum, title])
+                    # sort by semester too? 
+    sections = curs.fetchall()
+    return sections
 
-def getByDepartment(query):
-    conn = dbi.connect()
+'''Input: user query and kind. Output: number of sections fitting that query'''
+def numSections(conn, query, kind):
+    curs = dbi.cursor(conn)
+    if (kind == "title" or kind == "dep" or kind == "cnum"):
+        curs.execute('''SELECT count(*) 
+                        FROM course
+                        WHERE {} like %s'''.format(kind), ['%' + query + '%'])
+        num = curs.fetchone()
+        return num[0]
+
+'''Input: user query and kind (for a search result that returns exactly one course).
+Output: cid of unique section fitting that query'''
+def getOneResult(conn, query, kind):
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT cnum, title, sem, yr, prof, cid
-                    FROM course 
-                    WHERE dep like %s''', ['%' + query + '%']) 
-                    # question substitute dep w/ variable
-    courses = curs.fetchall()
-    return courses
-
-def getByCnum(query):
-    conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT cnum, title, sem, yr, prof, cid 
-                    FROM course 
-                    WHERE cnum like %s''', ['%' + query + '%']) 
-                    # question substitute cnum w/ variable
-    courses = curs.fetchall()
-    return courses
-
-def getCourses(courses):
-    ''' Returns a list of dictionaries with the cnum and titles of all the courses'''
-    uniqueCourses = []
-    cnums = set()
-
-    for course in courses: 
-        cnum = course['cnum']
-        title = course.get('title', 'NULL')
-
-        # Add course information (if not already present)
-        # Assumption: Course title is based on first found instance of course
-        if cnum not in cnums: 
-            cnums.add(cnum)
-            uniqueCourses.append({'cnum': cnum, 'title': title})
-
-    # Sorts them in alphabetical order by cnum
-    uniqueCourses.sort(key = lambda course: course['cnum'].lower())
-
-    return uniqueCourses
+    if (kind == "title" or kind == "dep" or kind == "cnum"):
+        curs.execute('''SELECT cid, cnum
+                        FROM course
+                        WHERE {} like %s'''.format(kind), ['%' + query + '%']
+                    ) 
+        section = curs.fetchone()
+        return section['cid']
 
 # Safiya's functions:
 def getCourseInfo():
@@ -215,4 +212,6 @@ def saveToDB(x, aFile):
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
-   
+   conn = dbi.connect()
+#    print(getCourses(conn, "databases", "title"))
+   print(getOneResult(conn, 'databases', 'title'))

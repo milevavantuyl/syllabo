@@ -3,14 +3,12 @@
 {% block main_content %}
     <h1> Results for search query: {{query}} </h1>
 
-    {% for course in allCourses %}
+    {% for course in courses %}
         <h2>{{course.cnum}}: {{course.title}}</h2>
-        {% for section in allSections %}
-            {% if course.cnum == section.cnum %}
-            <ul>
+        {% for section in course.sections %}
+            <ul> 
                 <li> <a href='/course/{{section.cid}}'>{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
             </ul>
-            {% endif %}
         {% endfor %}
     {% endfor %}
 {% endblock %}
