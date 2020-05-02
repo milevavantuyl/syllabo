@@ -67,8 +67,11 @@ def search():
     kind = request.args.get('type') 
 
     # Check kind type is valid
-    if (kind == "title" or kind == "dep" or kind == "cnum"):
-        courseResults = functions.getCourses(conn, search, kind)
+    if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
+        if (kind == "prof"):
+            courseResultsByProf = functions.getCoursesByProf(conn, search)
+        else: 
+            courseResults = functions.getCourses(conn, search, kind)
         numSections = functions.numSections(conn, search, kind)
 
         # No results: redirect user to create a new course
@@ -80,13 +83,17 @@ def search():
         elif numSections == 1: 
             cid = functions.getOneResult(conn, search, kind)
             return redirect(url_for('showCourse', cid = cid))
-        
+                
         # Multiple results: display all the results
         else: 
-            print(courseResults)
-            return render_template('search_results.html', 
-                courses = courseResults, query = search)
 
+            if (kind == "prof"):
+                return render_template('prof_search_results.html', 
+                profs=courseResultsByProf, query = search)
+            else: 
+                return render_template('search_results.html', 
+                courses = courseResults, query = search)
+        
     # Invalid kind type
     else: 
         flash ('Invalid value entered for type field.')

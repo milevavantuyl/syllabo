@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-    <h1> Results for search query: {{query}} </h1>
+    <h1> Results for search query "{{query}}" </h1>
 
     {% for course in courses %}
         <h2>{{course.cnum}}: {{course.title}}</h2>
-        <p> Relevancy: {{course.ratings.relevRate}}</p>
-        <p>Usefulness: {{course.ratings.usefulRate}}</p>
-        <p>Difficulty: {{course.ratings.diffRate}}</p>
-        <p>Expectations: {{course.ratings.expectRate}}</p>
-        <p>Hours per week: {{course.ratings.hoursWk}}</p>
+        
+        {% set rating = course.ratings %}
+        <p> Relevancy: {{rating.relev if rating.relev != none else "No Rating"}}, 
+            Usefulness: {{rating.useful if rating.useful != none else "No Rating"}}, 
+            Difficulty: {{rating.diff if rating.diff != none else "No Rating"}}, 
+            Expectations: {{rating.expect if rating.expect!= none else "No Rating"}}, 
+            Hours per week: {{rating.hoursWk if rating.hoursWk != none else "No Rating" }}</p>
+
         {% for section in course.sections %}
             <ul> 
                 <li> <a href='/course/{{section.cid}}'>{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
