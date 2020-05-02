@@ -112,12 +112,25 @@ def getCourses(conn, query, kind):
 
         # Finds all sections associated with each distinct course
         for course in courses: 
-            # print("original: {}".format(course))
+            print("Original: {}".format(course))
             course['sections'] = getSections(conn, course['cnum'], course['title'])
-            # print("Updated: {}".format(course))
+            course['ratings'] = getCourseRatings(conn, course)
+            print("Updated: {}".format(course))
 
         # print("Num {}".format(numSections(conn, query, kind)))
-        return courses  
+        return courses 
+
+def getCourseRatings(conn, course):
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT avg(relevRate) as relevRate, 
+                            avg(usefulRate) as usefulRate, 
+                            avg(diffRate) as diffRate, 
+                            avg(expectRate) as expectRate, 
+                            avg(hoursWk) as hoursWk
+                    FROM rates INNER JOIN course USING (cid)
+                    WHERE cnum = %s and title = %s''', [course['cnum'], course['title']])
+    courseRatings = curs.fetchone()
+    return courseRatings
 
 '''Input: course cnum and title. Output: list of dictionaries containing all
 the information about each course section in sorted order'''
@@ -213,5 +226,4 @@ if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
    conn = dbi.connect()
-#    print(getCourses(conn, "databases", "title"))
-   print(getOneResult(conn, 'databases', 'title'))
+#    print(getCourses(conn, "data", "title"))

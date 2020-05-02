@@ -5,6 +5,11 @@
 
     {% for course in courses %}
         <h2>{{course.cnum}}: {{course.title}}</h2>
+        <p> Relevancy: {{course.ratings.relevRate}}</p>
+        <p>Usefulness: {{course.ratings.usefulRate}}</p>
+        <p>Difficulty: {{course.ratings.diffRate}}</p>
+        <p>Expectations: {{course.ratings.expectRate}}</p>
+        <p>Hours per week: {{course.ratings.hoursWk}}</p>
         {% for section in course.sections %}
             <ul> 
                 <li> <a href='/course/{{section.cid}}'>{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>

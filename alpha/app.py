@@ -84,7 +84,8 @@ def search():
         # Multiple results: display all the results
         else: 
             print(courseResults)
-            return render_template('search_results.html', courses = courseResults, query = search)
+            return render_template('search_results.html', 
+                courses = courseResults, query = search)
     
     # Invalid kind type
     else: 
