@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-    <h1> Results for search query "{{query}}" </h1>
+    {% if query != none %}
+        <h1> Results for search query "{{query}}" </h1>
+    {% endif%}
 
     {% for course in courses %}
         <h2>{{course.cnum}}: {{course.title}}</h2>

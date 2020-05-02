@@ -118,6 +118,22 @@ def getCourses(conn, query, kind):
 
         return courses 
 
+''' Gets all courses, sections, and ratings in the databases and sorts by 
+cnum and title of the course'''
+def getAllCourses(conn): 
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT distinct cnum, title
+                    FROM course
+                    ORDER BY cnum ASC, title ASC''')
+    courses = curs.fetchall()
+
+    # Finds all sections associated with each distinct course
+    for course in courses: 
+        course['sections'] = getSections(conn, course['cnum'], course['title'])
+        course['ratings'] = getCourseRatings(conn, course)
+
+    return courses 
+
 ''' Input: User search query by prof. Output: All courses and sections by matching profs'''
 def getCoursesByProf(conn, query): 
 

@@ -59,6 +59,13 @@ def uploadSyllabus(n):
         functions.saveToDB(n, file.filename)
         return render_template('home.html', courses = functions.getRecommended())
 
+@app.route('/explore/', methods = ['GET'])
+def explore(): 
+    conn = dbi.connect()
+    allCourses = functions.getAllCourses(conn)
+    return render_template('search_results.html', 
+                courses = allCourses, query = None)
+    
 @app.route('/search/', methods = ['GET']) 
 def search(): 
     conn = dbi.connect()
