@@ -98,7 +98,8 @@ def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
 
 # Mileva's functions:
 
-''' Input: User search query and kind of query, Output: All courses and sections fitting the query'''
+''' Input: User search query and kind of query, 
+Output: All courses and sections fitting the query'''
 def getCourses(conn, query, kind):
 
     curs = dbi.dict_cursor(conn)
@@ -106,31 +107,40 @@ def getCourses(conn, query, kind):
         curs.execute('''SELECT distinct cnum, title
                         FROM course
                         WHERE {} like %s
-                        ORDER BY cnum ASC, title ASC'''.format(kind), ['%' + query + '%']
-                        ) 
+                        ORDER BY cnum ASC, title ASC'''.format(kind), 
+                        ['%' + query + '%']) 
         courses = curs.fetchall()
 
         # Finds all sections associated with each distinct course
         for course in courses: 
-            print("Original: {}".format(course))
             course['sections'] = getSections(conn, course['cnum'], course['title'])
             course['ratings'] = getCourseRatings(conn, course)
-            print("Updated: {}".format(course))
 
-        # print("Num {}".format(numSections(conn, query, kind)))
         return courses 
 
-def getCourseRatings(conn, course):
+def getCoursesByProf(conn, query): 
+
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT avg(relevRate) as relevRate, 
-                            avg(usefulRate) as usefulRate, 
-                            avg(diffRate) as diffRate, 
-                            avg(expectRate) as expectRate, 
-                            avg(hoursWk) as hoursWk
-                    FROM rates INNER JOIN course USING (cid)
-                    WHERE cnum = %s and title = %s''', [course['cnum'], course['title']])
-    courseRatings = curs.fetchone()
-    return courseRatings
+    curs.execute('''SELECT distinct prof 
+                    FROM course
+                    WHERE prof like %s
+                    ORDER BY prof ASC''', ['%' + query + '%'])
+    profs = curs.fetchall()
+
+    for prof in profs: 
+        prof['sections'] = getSectionsByProf(conn, prof['prof'])
+    
+    return profs
+
+def getSectionsByProf(conn, prof):
+
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, yr, sem 
+                    FROM course 
+                    WHERE prof = %s 
+                    ORDER BY cnum ASC, yr desc''', [prof])
+    sections = curs.fetchall()
+    return sections
 
 '''Input: course cnum and title. Output: list of dictionaries containing all
 the information about each course section in sorted order'''
@@ -139,10 +149,25 @@ def getSections(conn, cnum, title):
     curs.execute('''SELECT cnum, title, sem, yr, prof, cid
                     FROM course 
                     WHERE cnum = %s and title = %s
-                    ORDER BY yr''', [cnum, title])
+                    ORDER BY yr DESC''', [cnum, title])
                     # sort by semester too? 
     sections = curs.fetchall()
     return sections
+
+'''Input course dictionary containing a title and cnum. Outputs: A dictionary 
+of the average ratings across all sections of that course.'''
+def getCourseRatings(conn, course):
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT avg(relevRate) as relevRate, 
+                            avg(usefulRate) as usefulRate, 
+                            avg(diffRate) as diffRate, 
+                            avg(expectRate) as expectRate, 
+                            avg(hoursWk) as hoursWk
+                    FROM rates INNER JOIN course USING (cid)
+                    WHERE cnum = %s and title = %s''', 
+                    [course['cnum'], course['title']])
+    courseRatings = curs.fetchone()
+    return courseRatings
 
 '''Input: user query and kind. Output: number of sections fitting that query'''
 def numSections(conn, query, kind):
@@ -154,8 +179,8 @@ def numSections(conn, query, kind):
         num = curs.fetchone()
         return num[0]
 
-'''Input: user query and kind (for a search result that returns exactly one course).
-Output: cid of unique section fitting that query'''
+'''Input: user query and kind (for a search result that 
+returns exactly one course). Output: cid of unique section fitting that query'''
 def getOneResult(conn, query, kind):
     curs = dbi.dict_cursor(conn)
     if (kind == "title" or kind == "dep" or kind == "cnum"):
@@ -226,4 +251,5 @@ if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
    conn = dbi.connect()
-#    print(getCourses(conn, "data", "title"))
+#    print(getCoursesByProf(conn, "an"))
+

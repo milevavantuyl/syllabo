@@ -86,7 +86,7 @@ def search():
             print(courseResults)
             return render_template('search_results.html', 
                 courses = courseResults, query = search)
-    
+
     # Invalid kind type
     else: 
         flash ('Invalid value entered for type field.')
