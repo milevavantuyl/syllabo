@@ -129,28 +129,9 @@ def showCourse(cid):
         return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
-def updateCourse(cid):
+def update(cid):
     if request.method == 'GET':
         flash("This feature coming soon!")
-
-@app.route('/formecho/', methods=['GET','POST'])
-def formecho():
-    if request.method == 'GET':
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data=request.args)
-    elif request.method == 'POST':
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data=request.form)
-    else:
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data={})
-
-@app.route('/testform/')
-def testform():
-    return render_template('testform.html')
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@
 {% block main_content %}
 
 
-  <p>Missing or outdated information? <a href="/courses/{{cid}}/update">Update this course</a></p>
+  <p>Missing or outdated information? <a href="{{ url_for('update', cid = cid) }}">Update this course</a></p>
     <h3>{{basics.title}}</h3>
     <h3>{{basics.cnum}}</h3>
     <table id="basics" style="width:100%">
