@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Update or add information for {{basics.title}}</h1>
+
+<form method="POST" action="">
+
+    <fieldset>
+    <legend>Course Info</legend>
+    <table>
+    <tbody><tr><td><label for="course-title"> Course Title:</label></td>
+        <td><input type="text" name="course-title" value={{basics.title}} id="course-title"></td></tr>
+    <tr><td><label for="course-dept">Department:</label></td>
+        <td><input type="text" name="course-dept" value={{basics.dep}} id="course-dept"></td></tr>
+    <tr><td><label for="course-num">Course Number:</label></td>
+        <td><input type="text" name="course-num" value={{basics.cnum}} id="course-num"></td></tr>
+    <tr><td><label for="course-crn">CRN:</label></td>
+        <td><input type="text" name="course-crn" value={{basics.crn}} id="course-crn"></td></tr>
+    <tr><td><label for="course-website">Website:</label></td>
+        <td><input type="text" name="course-website" value="" id="course-website"></td></tr>
+    <tr><td><label for="course-prof">Professor:</label></td>
+        <td><input type="text" name="course-prof" value={{basics.prof}} id="course-prof"></td></tr>
+    <tr><td><label for="course-sem">Semester:</label></td>
+        <td><select id="course-sem" name="course-sem">
+            <option value="Fall">Fall</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Winter">Winter</option>
+          </select></td></tr>  
+    <tr><td><label for="course-year">Year:</label></td>
+        <td><select id="course-year" name="course-year">
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+            <option value="2018">2018</option>
+            <option value="2017">2017</option>
+            </select></td></tr> 
+    </tbody></table>
+    </fieldset>
+
+    <p> <input type="submit" value="Update Course"> </p>
+    
+</form>
+{% endblock %}
