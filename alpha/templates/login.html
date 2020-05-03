@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block head_stuff%}
+<title>Welcome, log in!</title>
+{% endblock %}
+
+{% block main_content %}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+            
+{% if username %}
+   <form method="GET" action="{{url_for('cas.logout')}}"><button>logout {{username}}</button></form>
+   <p>CAS username: {{username}}</p>
+   <p>CAS attributes:</p>
+   <ul>
+       {% for key,val in cas_attributes.items() %}
+       <li>{{key}} &rArr; {{val}}</li>
+       {% endfor %}
+   </ul>
+
+{% else %}
+   <form method="GET" action="{{url_for('cas.login')}}"><button>login</button></form>
+{% endif %}   
+
+{% endblock %}
