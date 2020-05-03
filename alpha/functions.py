@@ -219,6 +219,7 @@ def getCID(val):
     return result['cid']
 
 def getRecommended():
+    '''Gets recommended courses to display on the home page'''
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''SELECT course.cid, course.title 
