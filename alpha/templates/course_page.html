@@ -7,7 +7,7 @@
 {% block main_content %}
 
 
-  <p>Missing or outdated information? <a href="{{ url_for('update', cid = cid) }}">Update this course</a></p>
+  <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
     <h3>{{basics.title}}</h3>
     <h3>{{basics.cnum}}</h3>
     <table id="basics" style="width:100%">
@@ -61,13 +61,26 @@
           <td>Hours per week spent on coursework</td>
           <td>{{avgRatings.h}}</td>
         </tr>
-	  </table>
-		<a href={{basics.syl}}><h4>Syllabus PDF</h4></a>
-    	
-    	<h4>Course Website</h4>
-    	 <iframe src={{basics.web}} width="80%" height="400px">
-    	</iframe>
-    	
+    </table>
+    <!--
+      change to correct name for syllabus var from the new table
+      will probably have to reference a dictionary in the 
+      render_template return for the showCourse function
+    {% if syllabus %}
+    <a href={{syllabus}}><h4>Syllabus PDF</h4></a>  
+    {% else %}
+      <h4>No course syllabus uploaded yet! </h4>
+    {% endif %}
+    -->
+
+    {% if basics.web %}
+      <h4>Course Website</h4>             
+      <iframe src={{basics.web}} width="80%" height="400px">
+      </iframe>  
+    {% else %}
+      <h4>No course website yet! </h4>
+    {% endif %}
+
       <p>How did other students find this course?</p>
       
       <table id="comments" style="width:100%">

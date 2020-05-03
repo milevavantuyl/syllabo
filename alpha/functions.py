@@ -20,9 +20,9 @@ def getBasics(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT title, dep, cnum, crn, syl, web, yr, sem, prof
-    FROM course
-    WHERE cid = (%s)''', [cid])
+            SELECT title, dep, cnum, crn, syl, web, yr, sem, prof
+            FROM course
+            WHERE cid = (%s)''', [cid])
     basicsDict = curs.fetchone()
     conn.commit()
     return basicsDict
@@ -34,9 +34,9 @@ def getAvgRatings(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT AVG(relevRate) AS r, AVG(usefulRate) AS u, AVG(diffRate) AS d, AVG(expectRate) AS e, AVG(hoursWk) AS h
-    FROM rates
-    WHERE cid = (%s)''', [cid])
+            SELECT AVG(relevRate) AS r, AVG(usefulRate) AS u, AVG(diffRate) AS d, AVG(expectRate) AS e, AVG(hoursWk) AS h
+            FROM rates
+            WHERE cid = (%s)''', [cid])
     avgRatingsDict = curs.fetchone()
     conn.commit()
     return avgRatingsDict
@@ -47,9 +47,9 @@ def getComments(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    SELECT name, comment  
-    FROM rates INNER JOIN student USING(bNum)
-    WHERE cid = (%s)''', [cid])
+            SELECT name, comment  
+            FROM rates INNER JOIN student USING(bNum)
+            WHERE cid = (%s)''', [cid])
     commentsDict = curs.fetchall()
     conn.commit()
     return commentsDict
@@ -62,38 +62,23 @@ def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk,
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    INSERT INTO rates(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
-    [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
-    conn.commit()
-
-'''addSyllabus() updates the given row in the course table to add a syllabus'''
-def addSyllabus(cid, syl):
-    conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    query = curs.execute('''
-    UPDATE course SET syl = (%s)
-    WHERE cid = (%s)''', [syl, cid])
-    conn.commit()
-
-'''addWebsite() updates the given row in the course table to add a website'''
-def addWebsite(cid, web):
-    conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    query = curs.execute('''
-    UPDATE course SET web = (%s)
-    WHERE cid = (%s)''', [syl, web])
+            INSERT INTO rates(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
+            [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
     conn.commit()
 
 '''updateCourse() allows the user to update any information about the course'''
-def updateCourse(cid, title, dep, cnum, crn, syl, web, yr, sem, prof):
+def updateCourse(updates, cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-    UPDATE course 
-    SET title = (%s), dep = (%s), cnum = (%s), crn = (%s), syl = (%s), 
-    web = (%s), yr = (%s), sem = (%s), prof = (%s) 
-    WHERE cid = (%s)''', [title, dep, cnum, crn, syl, web, yr, sem, prof, cid])
+            UPDATE course 
+            SET title = (%s), dep = (%s), cnum = (%s), crn = (%s), 
+            web = (%s), yr = (%s), sem = (%s), prof = (%s) 
+            WHERE cid = (%s)''', 
+            [updates['course-title'], updates['course-dep'], updates['course-num'], 
+                updates['course-crn'], updates['course-website'], updates['course-year'],
+                updates['course-sem'], updates['course-prof'], cid])
     conn.commit()
 
 # Mileva's functions:
