@@ -137,11 +137,12 @@ def update(cid):
 if __name__ == '__main__':
     import sys, os
     if len(sys.argv) > 1:
-        # arg, if any, is the desired port number
-        port = int(sys.argv[1])
-        assert(port>1024)
+        port=int(sys.argv[1])
+        if not(1943 <= port <= 1950):
+            print('For CAS, choose a port from 1943 to 1950')
+            sys.exit()
     else:
-        port = os.getuid()
+        port=os.getuid()
     # the following database code works for both PyMySQL and SQLite3
     dbi.cache_cnf()
     dbi.use('syllabo_db')
