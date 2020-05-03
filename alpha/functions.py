@@ -34,7 +34,7 @@ def getAvgRatings(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-            SELECT AVG(relevRate) AS r, AVG(usefulRate) AS u, AVG(diffRate) AS d, AVG(expectRate) AS e, AVG(hoursWk) AS h
+            SELECT AVG(relevRate) AS rel, AVG(usefulRate) AS use, AVG(diffRate) AS diff, AVG(expectRate) AS exp, AVG(hoursWk) AS hrsWk
             FROM rates
             WHERE cid = (%s)''', [cid])
     avgRatingsDict = curs.fetchone()
