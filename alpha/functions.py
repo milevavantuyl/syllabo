@@ -1,8 +1,6 @@
 '''Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl
 pymysql functions for Syllabo'''
-# import sys
-# import pymysql
-# import pymysql.constants.ER
+
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 from werkzeug.utils import secure_filename
@@ -212,28 +210,20 @@ def getOneResult(conn, query, kind):
         return section['cid']
 
 # Safiya's functions:
-def getCourseInfo():
-    title = request.form.get('course-title')
-    dep = request.form.get('course-dept')
-    cnum = request.form.get('course-num')
-    crn = request.form.get('course-crn')
-    web = request.form.get('course-website')
-    yr = request.form.get('course-year')
-    sem = request.form.get('course-sem')
-    prof = request.form.get('course-prof')
-    return [title, dep, cnum, crn, web, yr, sem, prof]
-
+'''Takes all course info as a parameter and uses it to insert the given course into the database'''
 def insertCourse(val):
     conn = dbi.connect()
     curs = dbi.cursor(conn)
     curs.execute('''
     INSERT into course(title, dep, cnum, crn, web, yr, sem, prof)
     VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
-    [val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]])
+    val)
     conn.commit()
     return [val[0], val[5], val[6], val[7]]
 
 def getCID(val):
+    '''Gets the CID from the course that was just submitted to render the 
+       correct syl_upload form'''
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''
@@ -251,10 +241,12 @@ def getRecommended():
     results = curs.fetchall()
     return results
 
+'''Helper function for uploadSyllabus that checks if the file is a pdf'''
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-        
+
+'''Helper function for uploadSyllabus that puts the file name in the database'''
 def saveToDB(x, aFile):
     try:
         conn = dbi.connect()

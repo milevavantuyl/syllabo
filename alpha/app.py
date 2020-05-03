@@ -35,8 +35,8 @@ def createCourse():
     if request.method == 'GET':
         return render_template('create_course.html')
     else:
-        values = functions.getCourseInfo()
-        courseInfo = functions.insertCourse(values)
+        values = request.form
+        courseInfo = functions.insertCourse(list(values.values()))
         cid = functions.getCID(courseInfo)
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
