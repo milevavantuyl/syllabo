@@ -18,7 +18,7 @@ def getBasics(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-            SELECT title, dep, cnum, crn, syl, web, yr, sem, prof
+            SELECT title, dep, cnum, crn, syl, web, yr, sem, prof, cid
             FROM course
             WHERE cid = (%s)''', [cid])
     basicsDict = curs.fetchone()
@@ -32,7 +32,7 @@ def getAvgRatings(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-            SELECT AVG(relevRate) AS rel, AVG(usefulRate) AS use, AVG(diffRate) AS diff, AVG(expectRate) AS exp, AVG(hoursWk) AS hrsWk
+            SELECT AVG(relevRate) AS rel, AVG(usefulRate) AS useful, AVG(diffRate) AS diff, AVG(expectRate) AS exp, AVG(hoursWk) AS hrsWk
             FROM rates
             WHERE cid = (%s)''', [cid])
     avgRatingsDict = curs.fetchone()
@@ -74,7 +74,7 @@ def updateCourse(updates, cid):
             SET title = (%s), dep = (%s), cnum = (%s), crn = (%s), 
             web = (%s), yr = (%s), sem = (%s), prof = (%s) 
             WHERE cid = (%s)''', 
-            [updates['course-title'], updates['course-dep'], updates['course-num'], 
+            [updates['course-title'], updates['course-dept'], updates['course-num'], 
                 updates['course-crn'], updates['course-website'], updates['course-year'],
                 updates['course-sem'], updates['course-prof'], cid])
     conn.commit()
@@ -237,13 +237,16 @@ def saveToDB(x, aFile):
     try:
         conn = dbi.connect()
         curs = dbi.dict_cursor(conn)
-        curs.execute(
-            '''insert into syllabi(cid, filename) 
-               values (%s, %s)''', [x, aFile])
+        curs.execute('''
+                INSERT into syllabi(cid, filename) VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE filename = %s''', [x, aFile, aFile])
         conn.commit()
         flash('Upload successful')
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
+
+
+
         
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf

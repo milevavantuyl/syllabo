@@ -133,33 +133,15 @@ def update(cid):
     basics = functions.getBasics(cid)
     print(basics)
     if request.method == 'GET':
-        render_template('update_course.html', basics = basics)
+        return render_template('update_course.html', basics = basics)
     elif request.method == 'POST':
         updateValues = request.form.to_dict()
         #updateCourse is a nonfruitful function, takes in the form data and the cid
         functions.updateCourse(updateValues, cid)
         flash('Successfully updated course!')
+        print('running basics again')
+        print(functions.getBasics(cid))
         return redirect(url_for('updateSyllabus', cid = cid))
-
-@app.route('/updatesyllabus/<int:cid>', methods=['GET','POST'])
-def updateSyllabus(cid):
-    if request.method == 'GET':
-        return render_template('update_syl.html')
-    else:
-        if 'file' not in request.files:
-            flash('No file part')
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-        if file and functions.allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        functions.saveToDB(n, file.filename)
-        #bring them back to the updated course page
-        return redirect(url_for(showCourse, cid = cid))
-
 
 if __name__ == '__main__':
     import sys, os
