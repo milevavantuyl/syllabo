@@ -143,6 +143,26 @@ def update(cid):
         print(functions.getBasics(cid))
         return redirect(url_for('updateSyllabus', cid = cid))
 
+'Just a separate route from the original upload syllabus because the HTML and messaging is slightly diff'
+@app.route('/updatesyllabus/<int:cid>', methods=['GET','POST'])
+def updateSyllabus(cid):
+    #uses same functions as upload syllabus...not updating the course table
+    if request.method == 'GET':
+        return render_template('update_syl.html')
+    else:
+        if 'file' not in request.files:
+            flash('No file part')
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+        if file and functions.allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        functions.saveToDB(cid, file.filename)
+        #bring them back to the updated course page
+        return redirect(url_for('showCourse', cid = cid))
+
+
 if __name__ == '__main__':
     import sys, os
     if len(sys.argv) > 1:
