@@ -11,7 +11,13 @@ ALLOWED_EXTENSIONS = {'pdf'}
 
 app = Flask(__name__)
 
+from flask_cas import CAS
+
+CAS(app)
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 
 import random
 
@@ -24,6 +30,14 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'logged_in'
+# Doesn't redirect properly, but not a problem to fix--it is okay:
+app.config['CAS_AFTER_LOGOUT'] = 'after_logout'
+
 # fake bNum for now 4/23/2020 draft version - pre login implementation
 FOObNum = '20000000'
 @app.route('/')
@@ -133,6 +147,18 @@ def update(cid):
     if request.method == 'GET':
         flash("This feature coming soon!")
 
+# Log in CAS stuff:
+@app.route('/logged_in/')
+def logged_in():
+    flash('successfully logged in!')
+    return redirect( url_for('index') )
+
+@app.route('/after_logout/')
+def after_logout():
+    flash('successfully logged out!')
+    return redirect( url_for('index') )
+
+application = app
 
 if __name__ == '__main__':
     import sys, os
