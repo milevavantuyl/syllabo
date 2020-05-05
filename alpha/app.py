@@ -55,6 +55,13 @@ def createCourse():
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
 
+        @app.route('/create/', methods=['GET','POST'])
+
+@app.route('/profile/', methods=['GET'])
+def profilePage():
+    return render_template('login.html') # Is there a way to have this go to the profile page and then
+        # redirect if you are not logged in and in a session? (5/4/20)
+
 @app.route('/upload/<int:n>', methods=['GET','POST'])
 def uploadSyllabus(n):
     if request.method == 'GET':
