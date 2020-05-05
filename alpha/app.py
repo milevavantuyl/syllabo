@@ -142,9 +142,9 @@ def update(cid):
         print('running basics again')
         print(functions.getBasics(cid))
         return redirect(url_for('updateSyllabus', cid = cid))
-
-'Just a separate route from the original upload syllabus because the HTML and messaging is slightly diff'
+'''Just a separate route from the original upload syllabus because the HTML and messaging is slightly diff'''
 @app.route('/updatesyllabus/<int:cid>', methods=['GET','POST'])
+
 def updateSyllabus(cid):
     #uses same functions as upload syllabus...not updating the course table
     if request.method == 'GET':
@@ -161,6 +161,11 @@ def updateSyllabus(cid):
         functions.saveToDB(cid, file.filename)
         #bring them back to the updated course page
         return redirect(url_for('showCourse', cid = cid))
+
+@app.route('/profile/', methods =['GET', 'POST'])
+def profile():
+    if request.method == 'GET':
+        return render_template('profile_page.html')
 
 
 if __name__ == '__main__':

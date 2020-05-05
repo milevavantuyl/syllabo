@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<title>{{student.name}}</title>
+<img src="" alt="Profile picture for {{student.name}}" style="height:200px;">
+<table id="info">
+    <tr>
+        <td>{{student.email}}</td>
+    </tr>
+    <tr>
+        <td>{{student.major}}</td>
+    </tr>
+</table>
+
+ <!--the following should appear only if logged in.
+    I need to check how that works with sessions again.
+    Just writing the HTML 5/4/2020  -->
+
+<table id="favorites">
+    {% for favorite in favorites %}
+        <tr>
+            <td> <a href="{{url_for('showCourse', cid = favorite.cid)}}"></a>{{favorite.name}}</td>
+        </tr>
+        {% endfor %}
+</table> 
+
+<form method=POST action="">
+<label for="major"><p>Update your bio</p></label>
+              <p><textarea id="new_comment"
+                          name="new_comment"
+                          rows="6" cols="70"></textarea></p>
+      <input type="submit" name="submit" value="Update">
+    </form>
+
+{% endblock %}

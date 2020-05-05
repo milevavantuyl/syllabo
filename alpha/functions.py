@@ -79,6 +79,18 @@ def updateCourse(updates, cid):
                 updates['course-sem'], updates['course-prof'], cid])
     conn.commit()
 
+'''getFavorites returns the cid and course name for all favorite courses of a given bNum'''
+def getFavorites(bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT cid, title  
+            FROM favorites INNER JOIN course USING(cid)
+            WHERE bNum = (%s)''', [bNum])
+    favoritesDict = curs.fetchall()
+    conn.commit()
+    return favoritesDict
+
 # Mileva's functions:
 
 ''' Input: User search query and kind of query, 
@@ -252,4 +264,5 @@ if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
    conn = dbi.connect()
+   print(getFavorites(20000000))
 

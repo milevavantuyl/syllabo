@@ -10,6 +10,12 @@
   <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
     <h3>{{basics.title}}</h3>
     <h3>{{basics.cnum}}</h3>
+
+    <form id="favorite" action="">
+      <input type="submit" value="Favorite">
+    </form> 
+    
+  
     <table id="basics" style="width:100%">
         <tr>
           <th>Logistics</th>
