@@ -57,8 +57,18 @@ def createCourse():
 
 @app.route('/profile/', methods=['GET'])
 def profilePage():
-    return render_template('login.html') # Is there a way to have this go to the profile page and then
-        # redirect if you are not logged in and in a session? (5/4/20)
+    if '_CAS_TOKEN' in session:
+        token = session['_CAS_TOKEN']
+    if 'CAS_USERNAME' in session:
+        is_logged_in = True
+        username = session['CAS_USERNAME']
+    else:
+        is_logged_in = False
+        username = None
+    return render_template('login.html',
+                           username=username,
+                           is_logged_in=is_logged_in,
+                           cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 @app.route('/upload/<int:n>', methods=['GET','POST'])
 def uploadSyllabus(n):
