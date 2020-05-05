@@ -55,8 +55,6 @@ def createCourse():
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
 
-        @app.route('/create/', methods=['GET','POST'])
-
 @app.route('/profile/', methods=['GET'])
 def profilePage():
     return render_template('login.html') # Is there a way to have this go to the profile page and then
