@@ -156,12 +156,12 @@ def update(cid):
 @app.route('/logged_in/')
 def logged_in():
     flash('successfully logged in!')
-    return redirect( url_for('index') )
+    return redirect( url_for('profilePage') )
 
 @app.route('/after_logout/')
 def after_logout():
     flash('successfully logged out!')
-    return redirect( url_for('index') )
+    return redirect( url_for('profilePage') )
 
 application = app
 
