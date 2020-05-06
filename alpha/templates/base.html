@@ -22,15 +22,15 @@
 
 {% block nav_bar %}
 <ul id="nav_bar">
-    <li><a href= "{{url_for('index')}}" id="left_nav_bar">Syllabo</a></li>
+    <li><a href= "{{url_for('index')}}">Syllabo</a></li>
     <li><a href= "{{url_for('createCourse')}}">Create a Course</a></li>
-    <li><a href= "/explore/">Explore Courses</a></li>
-    <li><a href= "{{url_for('profilePage')}}">Profile</a></li>
+    <li><a href= "{{url_for('explore')}}">Explore Courses</a></li>
+    <li><a href= "{{url_for('login')}}">Profile</a></li>
 </ul>
 {% endblock %}
 
 {% block search_bar %}
-<form method="GET" action="{{url_for('search')}}">
+<form method="GET" action="{{url_for('search')}}" id="search_bar">
     <p><label>Search: <input type="text" name="search" required></label>
         <label>Search by: 
             <select name="type">
@@ -42,6 +42,7 @@
         </label>
         <input type="submit" value="search"></p>
 </form>
+
 {% endblock %}
 
 {% block main_content %}

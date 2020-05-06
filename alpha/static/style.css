@@ -54,6 +54,39 @@ h3, th {
     color: rgb(7, 103, 158);
 }
 
+#nav_bar{
+    list-style-type: none;
+    margin: 0px; 
+    padding: 0px;
+    overflow: hidden;
+    background-color: rgb(20, 18, 150);
+    /* position: fixed; */
+}
+
+#nav_bar li {
+    float: left;
+}
+
+#nav_bar li a {
+    display: block; 
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+} 
+
+#nav_bar li a:hover{
+    background-color:rgb(188, 207, 255);
+    color: black;
+}
+
+.result {
+    border: 10px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 15px;
+    margin: 10px;
+}
 
 /* Create three equal columns that floats next to each other */
 .column {

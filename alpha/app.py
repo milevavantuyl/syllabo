@@ -55,8 +55,8 @@ def createCourse():
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
 
-@app.route('/profile/', methods=['GET'])
-def profilePage():
+@app.route('/loginPage/', methods=['GET'])
+def login():
     if '_CAS_TOKEN' in session:
         token = session['_CAS_TOKEN']
     if 'CAS_USERNAME' in session:
@@ -92,7 +92,7 @@ def uploadSyllabus(n):
 def explore(): 
     conn = dbi.connect()
     allCourses = functions.getAllCourses(conn)
-    return render_template('search_results.html', 
+    return render_template('explore.html', 
                 courses = allCourses, query = None)
     
 @app.route('/search/', methods = ['GET']) 
@@ -212,13 +212,15 @@ def profile():
 # Log in CAS stuff:
 @app.route('/logged_in/')
 def logged_in():
-    flash('successfully logged in!')
-    return redirect( url_for('profilePage') )
+    # if profile not made yet, redirect to create profile
+    return redirect( url_for('login') )
+    # if profile in DB
+    # return redirect( url_for('profile') )
 
 @app.route('/after_logout/')
 def after_logout():
     flash('successfully logged out!')
-    return redirect( url_for('profilePage') )
+    return redirect( url_for('login') )
 
 application = app
 

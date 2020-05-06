@@ -18,6 +18,7 @@
             
 {% if username %}
    <form method="GET" action="{{url_for('cas.logout')}}"><button>logout {{username}}</button></form>
+   <form method="GET" action="{{url_for('profile')}}"></form>
    <!-- <p>CAS username: {{username}}</p>
    <p>CAS attributes:</p>
    <ul>

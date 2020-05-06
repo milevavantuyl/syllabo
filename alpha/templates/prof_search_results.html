@@ -4,11 +4,13 @@
     <h1> Results for search query "{{query}}"</h1>
 
     {% for prof in profs %}
-    <h2>{{prof.prof}}</h2>
-        {% for section in prof.sections %}
-            <ul> 
-                <li> <a href='/course/{{section.cid}}'>{{section.cnum}}: {{section.title}}, {{section.sem}} {{section.yr}}  </a></li>
-            </ul>
-        {% endfor %}
+    <div class="result">
+        <h4>{{prof.prof}}</h4>
+            {% for section in prof.sections %}
+                <ul> 
+                    <li> <a href='/course/{{section.cid}}'>{{section.cnum}}: {{section.title}}, {{section.sem}} {{section.yr}}  </a></li>
+                </ul>
+            {% endfor %}
+    </div>
     {% endfor %}
 {% endblock %}
