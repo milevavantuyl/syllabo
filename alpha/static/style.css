@@ -60,6 +60,7 @@ h3, th {
     padding: 0px;
     overflow: hidden;
     background-color: rgb(20, 18, 150);
+    /* position: fixed; */
 }
 
 #nav_bar li {
@@ -77,6 +78,14 @@ h3, th {
 #nav_bar li a:hover{
     background-color:rgb(188, 207, 255);
     color: black;
+}
+
+.course {
+    border: 10px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 15px;
+    margin: 10px;
 }
 
 /* Create three equal columns that floats next to each other */
