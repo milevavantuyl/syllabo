@@ -137,11 +137,13 @@ def search():
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
+    #pdf = functions.getPDF(cid)
     basics = functions.getBasics(cid)
     if request.method == 'GET':
         avgRatings = functions.getAvgRatings(cid)
-        comments = functions.getComments(cid)
-        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
+        comments = functions.getComments(cid) 
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
     elif request.method == 'POST':
         #user is rating (which includes commenting) the course.
         uR = request.form.get('usefulRate')
@@ -155,7 +157,18 @@ def showCourse(cid):
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
         #now we render the page again
-        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
+
+@app.route('/pdf/<cid>')
+def getPDF(cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute(
+        '''select filename from syllabi where cid = %s''',
+        [cid])
+    row = curs.fetchone()
+    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
 def update(cid):

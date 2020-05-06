@@ -68,16 +68,10 @@
           <td>{{avgRatings.hrsWk}}</td>
         </tr>
     </table>
-    <!--
-      change to correct name for syllabus var from the new table
-      will probably have to reference a dictionary in the 
-      render_template return for the showCourse function
-    {% if syllabus %}
-    <a href={{syllabus}}><h4>Syllabus PDF</h4></a>  
-    {% else %}
-      <h4>No course syllabus uploaded yet! </h4>
-    {% endif %}
-    -->
+    
+    <h4>Course Syllabus</h4>    
+    <iframe src="{{url_for('getPDF',cid=basics.cid)}}" width= "100%" height= "700px" ></iframe>
+  
 
     {% if basics.web %}
       <h4>Course Website</h4>             
