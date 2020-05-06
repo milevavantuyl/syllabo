@@ -92,7 +92,7 @@ def uploadSyllabus(n):
 def explore(): 
     conn = dbi.connect()
     allCourses = functions.getAllCourses(conn)
-    return render_template('search_results.html', 
+    return render_template('explore.html', 
                 courses = allCourses, query = None)
     
 @app.route('/search/', methods = ['GET']) 
