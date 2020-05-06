@@ -1,18 +1,77 @@
 /* For flashed messages; make them stand out using red and italics */
 
+* {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
 #messages {
     color: red;
     font-style: italic;
 }
 
+#welcome, #reccomended, table{
+    width: 80%;
+    border: 15px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+
+#rate{
+    width: 40%;
+    border: 15px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+
+th {
+    text-align: center;
+}
+
+ul.a {
+    list-style-type: square;
+}
+
 h1 {
-    font-size: 200%;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    position: relative;
+    left: 40%;
+    font-size: 250%;
     color: rgb(20, 18, 150);
 }
 
 h2 {
+    position: relative;
+    text-align: center;
     font-size: 150%;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     color: rgb(7, 103, 158);
 }
+
+h3, th {
+    text-align: center;
+    font-size: 100%;
+    color: rgb(7, 103, 158);
+}
+
+
+/* Create three equal columns that floats next to each other */
+.column {
+    float: left;
+    width: 40%;
+    padding: 15px;
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  
+  /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+  @media screen and (max-width:600px) {
+    .column {
+      width: 100%;
+    }
+  }

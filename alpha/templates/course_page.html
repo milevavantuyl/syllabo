@@ -4,23 +4,15 @@
 <title>Course Page</title>
 {% endblock %}
 
+
 {% block main_content %}
 
-
-  <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
-    <h3>{{basics.title}}</h3>
-    <h3>{{basics.cnum}}</h3>
-
-    <form id="favorite" action="">
-      <input type="submit" value="Favorite">
-    </form> 
-    
+<div class = "row">
+  <div class = "column">
+    <h2>{{basics.title}}</h2>
+    <h2>{{basics.cnum}}</h2>
   
-    <table id="basics" style="width:100%">
-        <tr>
-          <th>Logistics</th>
-          <th></th>
-        </tr>
+    <table id="basics">
         <tr>
             <td>Department</td>
             <td>{{basics.dep}}</td>
@@ -42,11 +34,31 @@
           <td>{{basics.crn}}</td>
         </tr>
       </table>
-      <table id="ratings" style="width:100%">
+    <!--
+      change to correct name for syllabus var from the new table
+      will probably have to reference a dictionary in the 
+      render_template return for the showCourse function
+    {% if syllabus %}
+    <a href={{syllabus}}><h4>Syllabus PDF</h4></a>  
+    {% else %}
+      <h4>No course syllabus uploaded yet! </h4>
+    {% endif %}
+    -->
+
+    {% if basics.web %}
+      <h3>Course Website</h3>             
+      <iframe src={{basics.web}} width="80%" height="400px">
+      </iframe>  
+    {% else %}
+      <h4>No course website yet! </h4>
+    {% endif %}
+    <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
+
+      <table id="ratings">
         <tr>
           <th>Ratings</th>
-          <th></th>
-        </tr>
+        </tr> 
+      </tr> 
         <tr>
             <td>Usefulness for major</td>
             <td>{{avgRatings.useful}}</td>
@@ -64,32 +76,12 @@
           <td>{{avgRatings.exp}}</td>
         </tr>
         <tr>
-          <td>Hours per week spent on coursework</td>
+          <td>How time consuming</td>
           <td>{{avgRatings.hrsWk}}</td>
         </tr>
     </table>
-    <!--
-      change to correct name for syllabus var from the new table
-      will probably have to reference a dictionary in the 
-      render_template return for the showCourse function
-    {% if syllabus %}
-    <a href={{syllabus}}><h4>Syllabus PDF</h4></a>  
-    {% else %}
-      <h4>No course syllabus uploaded yet! </h4>
-    {% endif %}
-    -->
-
-    {% if basics.web %}
-      <h4>Course Website</h4>             
-      <iframe src={{basics.web}} width="80%" height="400px">
-      </iframe>  
-    {% else %}
-      <h4>No course website yet! </h4>
-    {% endif %}
-
-      <p>How did other students find this course?</p>
-      
-      <table id="comments" style="width:100%">
+      <table id="comments">
+        <th>Comments</th>
       {% for comment in comments %}
           <tr>
             <td>{{comment.name}}</td>
@@ -97,7 +89,9 @@
         </tr>
     	{% endfor %}
     </table> 
-
+  </div>
+    <div class = "column" id = "rate">
+    
     <h3>How would you rate this course?</h3>
 
     <form method=POST action="">
@@ -152,10 +146,14 @@
       <label for="new_comment"><p>Is there anything you'd like to share about {{basics.cnum}}: {{basics.title}}?</p></label>
               <p><textarea id="new_comment"
                           name="new_comment"
-                          rows="6" cols="70"></textarea></p>
+                          rows="6" cols="40"></textarea></p>
       <input type="submit" name="submit" value="rate">
     </form>
+    <form id="favorite" action="">
+      <input type="submit" value="Add to Favorites">
+    </form> 
     
-    
+  </div>
+  </div>
      
     {% endblock %}
