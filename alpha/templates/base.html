@@ -5,11 +5,11 @@
     <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
     <meta name=description content="Syllabo Wellesley Syllabus Database">
     <title> {{title}} </title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css"> 
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename = '/style.css')}}"> 
     {% block head_stuff %} {% endblock %}
 </head>
 <body>
-<!--"{{url_for('static', filename = '/static/style.css')}}"-->
+
 {% with messages = get_flashed_messages() %}
     {% if messages %}
         <div id="messages">
