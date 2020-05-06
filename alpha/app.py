@@ -11,7 +11,13 @@ ALLOWED_EXTENSIONS = {'pdf'}
 
 app = Flask(__name__)
 
+from flask_cas import CAS
+
+CAS(app)
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 
 import random
 
@@ -24,6 +30,14 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'logged_in'
+# Doesn't redirect properly, but not a problem to fix--it is okay:
+app.config['CAS_AFTER_LOGOUT'] = 'after_logout'
+
 # fake bNum for now 4/23/2020 draft version - pre login implementation
 FOObNum = '20000000'
 @app.route('/')
@@ -40,6 +54,21 @@ def createCourse():
         cid = functions.getCID(courseInfo)
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
+
+@app.route('/profile/', methods=['GET'])
+def profilePage():
+    if '_CAS_TOKEN' in session:
+        token = session['_CAS_TOKEN']
+    if 'CAS_USERNAME' in session:
+        is_logged_in = True
+        username = session['CAS_USERNAME']
+    else:
+        is_logged_in = False
+        username = None
+    return render_template('login.html',
+                           username=username,
+                           is_logged_in=is_logged_in,
+                           cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 @app.route('/upload/<int:n>', methods=['GET','POST'])
 def uploadSyllabus(n):
@@ -108,11 +137,13 @@ def search():
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
+    #pdf = functions.getPDF(cid)
     basics = functions.getBasics(cid)
     if request.method == 'GET':
         avgRatings = functions.getAvgRatings(cid)
-        comments = functions.getComments(cid)
-        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
+        comments = functions.getComments(cid) 
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
     elif request.method == 'POST':
         #user is rating (which includes commenting) the course.
         uR = request.form.get('usefulRate')
@@ -126,7 +157,18 @@ def showCourse(cid):
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
         #now we render the page again
-        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, comments=comments)
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
+
+@app.route('/pdf/<cid>')
+def getPDF(cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute(
+        '''select filename from syllabi where cid = %s''',
+        [cid])
+    row = curs.fetchone()
+    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
 def update(cid):
@@ -167,15 +209,28 @@ def profile():
     if request.method == 'GET':
         return render_template('profile_page.html')
 
+# Log in CAS stuff:
+@app.route('/logged_in/')
+def logged_in():
+    flash('successfully logged in!')
+    return redirect( url_for('profilePage') )
+
+@app.route('/after_logout/')
+def after_logout():
+    flash('successfully logged out!')
+    return redirect( url_for('profilePage') )
+
+application = app
 
 if __name__ == '__main__':
     import sys, os
     if len(sys.argv) > 1:
-        # arg, if any, is the desired port number
-        port = int(sys.argv[1])
-        assert(port>1024)
+        port=int(sys.argv[1])
+        if not(1943 <= port <= 1950):
+            print('For CAS, choose a port from 1943 to 1950')
+            sys.exit()
     else:
-        port = os.getuid()
+        port=os.getuid()
     # the following database code works for both PyMySQL and SQLite3
     dbi.cache_cnf()
     dbi.use('syllabo_db')

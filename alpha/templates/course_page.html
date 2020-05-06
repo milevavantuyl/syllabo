@@ -80,8 +80,22 @@
           <td>{{avgRatings.hrsWk}}</td>
         </tr>
     </table>
-      <table id="comments">
-        <th>Comments</th>
+    
+    <h4>Course Syllabus</h4>    
+    <iframe src="{{url_for('getPDF',cid=basics.cid)}}" width= "100%" height= "700px" ></iframe>
+  
+
+    {% if basics.web %}
+      <h4>Course Website</h4>             
+      <iframe src={{basics.web}} width="80%" height="400px">
+      </iframe>  
+    {% else %}
+      <h4>No course website yet! </h4>
+    {% endif %}
+
+      <p>How did other students find this course?</p>
+      
+      <table id="comments" style="width:100%">
       {% for comment in comments %}
           <tr>
             <td>{{comment.name}}</td>

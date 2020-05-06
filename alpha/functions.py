@@ -10,6 +10,10 @@ import os
 UPLOAD_FOLDER = 'upload_folder'
 ALLOWED_EXTENSIONS = {'pdf'}
 
+app = Flask(__name__)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 # Sarah's functions:
 '''getBasics() returns a dictionary of course information 
     from the course table in syllabo_db given the cid (UNIQUE course id)
@@ -258,8 +262,6 @@ def saveToDB(x, aFile):
         flash('Upload failed {why}'.format(why=err))
 
 
-
-        
 if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
