@@ -13,10 +13,17 @@
     </tr>
 </table>
 
- <!--the following should appear only if logged in.
-    I need to check how that works with sessions again.
-    Just writing the HTML 5/4/2020  -->
+Comments {{student.name}} has made:
+<table id="comments">
+    {% for comment in comments %}
+        <tr>
+            <td>{{comment.title}}</td>
+            <td>{{comment.comment}}</td>
+        </tr>
+    {% endfor %}
+</table>
 
+{{student.name}}'s favorite courses:
 <table id="favorites">
     {% for favorite in favorites %}
         <tr>
@@ -25,12 +32,15 @@
         {% endfor %}
 </table> 
 
+{% if is_logged_in %}
 <form method=POST action="">
-<label for="major"><p>Update your bio</p></label>
-              <p><textarea id="new_comment"
-                          name="new_comment"
-                          rows="6" cols="70"></textarea></p>
+<label for="major"><p>Update your major</p></label>
+              <p><textarea id="major"
+                          name="major"
+                          rows="1" cols="40"></textarea></p>
       <input type="submit" name="submit" value="Update">
     </form>
+
+{% end if %}
 
 {% endblock %}

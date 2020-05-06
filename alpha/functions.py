@@ -95,6 +95,19 @@ def getFavorites(bNum):
     conn.commit()
     return favoritesDict
 
+'''getStudentComments() returns a dictionary of all of the comments a certain student has made
+given the bNum. This information will be displayed on their profile.'''
+def getStudentComments(bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT title, comment  
+            FROM rates INNER JOIN course USING(cid)
+            WHERE bNum = (%s)''', [bNum])
+    commentsDict = curs.fetchall()
+    conn.commit()
+    return commentsDict
+    
 # Mileva's functions:
 
 ''' Input: User search query and kind of query, 

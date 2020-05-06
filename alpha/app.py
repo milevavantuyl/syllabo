@@ -204,9 +204,10 @@ def updateSyllabus(cid):
         #bring them back to the updated course page
         return redirect(url_for('showCourse', cid = cid))
 
-@app.route('/profile/', methods =['GET', 'POST'])
+@app.route('/profile/<name>', methods =['GET', 'POST'])
 def profile():
     if request.method == 'GET':
+        
         return render_template('profile_page.html')
 
 # Log in CAS stuff:
