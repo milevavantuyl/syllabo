@@ -121,7 +121,7 @@ def checkUser(conn, bNumber):
             WHERE bNum = (%s)
             LIMIT 1''', [bNumber])
     bNumInDB = curs.fetchall()
-    return bNumInDB == bNumber
+    return bNumInDB[0].get('bNum') == bNumber
 
 '''Takes all student info as a parameter and uses it to insert the student into the database'''
 def insertStudent(val):

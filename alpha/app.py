@@ -246,14 +246,12 @@ def profile():
 @app.route('/logged_in/')
 def logged_in():
     conn = dbi.connect()
-    if 'CAS_ATTRIBUTES' in session:
-        attribs = session['CAS_ATTRIBUTES']
-        alreadyAMember = functions.checkUser(conn, attribs.get('cas:id'))
-        # if profile already made, redirect to profile
-        if(alreadyAMember):
-            return redirect( url_for('profile') )
-        else: # if not, create profile
-            return redirect( url_for('createProfile') )
+    alreadyAMember = functions.checkUser(conn, functions.getBNum())
+    # if profile already made, redirect to profile
+    if(alreadyAMember):
+        return redirect( url_for('profile') )
+    else: # if not, create profile
+        return redirect( url_for('createProfile') )
 
 @app.route('/after_logout/')
 def after_logout():
