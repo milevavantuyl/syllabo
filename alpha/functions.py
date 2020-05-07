@@ -121,6 +121,22 @@ def checkUser(conn, bNumber):
     bNumInDB = curs.fetchall()
     return bNumInDB == bNumber
 
+'''Takes all student info as a parameter and uses it to insert the student into the database'''
+def insertStudent(val):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+    INSERT into student(bNum, name, major, email)
+    VALUES(%s, %s, %s, %s)''', 
+    val)
+    conn.commit()
+
+'''Function to get the bnumber of the logged in student. Prerequisite is that the student is currently logged in'''
+def getBNum():
+    if 'CAS_ATTRIBUTES' in session:
+        attribs = session['CAS_ATTRIBUTES']
+        return attribs.get('cas:id')
+
 # Mileva's functions:
 
 ''' Input: User search query and kind of query, 

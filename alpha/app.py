@@ -61,9 +61,41 @@ def createProfile():
         return render_template('create_profile.html')
     else:
         values = request.form
-        studentInfo = functions.insertStudent(list(values.values()))
-        bNum = functions.getBNum(studentInfo)
-        return redirect(url_for('uploadPortrait', n = bNum))
+        bNum = functions.getBNum()
+        student_attributes = list(values.values())
+        student_attributes.insert(0,bNum)
+        studentInfo = functions.insertStudent(student_attributes)
+        return redirect(url_for('uploadPic', n = bNum))
+
+@app.route('/uploadPic/', methods=["GET", "POST"])
+def uploadPic():
+    if request.method == 'GET':
+        return render_template('portrait_upload.html',src='',nm='')
+    else:
+        try:
+            print("THISTHISTHIS")
+            nm = int(functions.getBNum) # may throw error
+            f = request.files['pic']
+            user_filename = f.filename
+            ext = user_filename.split('.')[-1]
+            filename = secure_filename('{}.{}'.format(nm,ext))
+            pathname = os.path.join(app.config['UPLOADS'],filename)
+            f.save(pathname)
+            conn = dbi.connect()
+            curs = dbi.dict_cursor(conn)
+            curs.execute(
+                '''insert into portrait(bNum,filename) values (%s,%s)
+                   on duplicate key update filename = %s''',
+                [nm, filename, filename])
+            conn.commit()
+            flash('Upload successful')
+            return render_template('profile_page.html',
+                                   src=url_for('pic',nm=nm),
+                                   nm=nm)
+        except Exception as err:
+            flash('Upload failed {why}'.format(why=err))
+            return render_template('portrait_upload.html',src='',nm='')
+            
 
 @app.route('/loginPage/', methods=['GET'])
 def login():
