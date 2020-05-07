@@ -114,9 +114,10 @@ def getStudentComments(bNum):
 Output: true if bnum is in database, false otherwise'''
 def checkUser(conn, bNumber):
     curs = dbi.dict_cursor(conn)
-    curs.execute('''SELECT TOP 1 bNum 
+    curs.execute('''SELECT bNum 
             FROM student 
-            WHERE bNum = %s''', [bNumber])
+            WHERE bNum = (%s)
+            LIMIT 1''', [bNumber])
     bNumInDB = curs.fetchall()
     return bNumInDB == bNumber
 
