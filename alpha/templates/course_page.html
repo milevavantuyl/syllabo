@@ -98,7 +98,7 @@
       <table id="comments" style="width:100%">
       {% for comment in comments %}
           <tr>
-            <td><a href="{{ url_for('profile', name = comment.name) }}">comment.name</a></td>
+            <td><a href="{{ url_for('profile', name = comment.name) }}">{{comment.name}}</a></td>
             <td>{{comment.comment}}</td>
         </tr>
     	{% endfor %}

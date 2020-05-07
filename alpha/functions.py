@@ -131,9 +131,7 @@ def checkUser(conn, bNumber):
             WHERE bNum = (%s)
         ''', [bNumber])
     bNumInDB = curs.fetchone()
-    print(bNumInDB)
-    print()
-    return bNumInDB == bNumber
+    return bNumInDB.get('bNum') == bNumber
 
 '''Takes all student info as a parameter and uses it to insert the student into the database'''
 def insertStudent(val):

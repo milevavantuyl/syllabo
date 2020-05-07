@@ -199,7 +199,14 @@ def login():
     else:
         is_logged_in = False
         username = None
-    return render_template('login.html',
+    if is_logged_in:
+        conn = dbi.connect()
+        bNum = functions.getBNum()
+        student = functions.getStudent(bNum)
+        name = student[1]
+        return redirect( url_for('profile', name = name) )
+    else:
+        return render_template('login.html',
                            username=username,
                            is_logged_in=is_logged_in,
                            cas_attributes = session.get('CAS_ATTRIBUTES'))
@@ -213,6 +220,7 @@ def logged_in():
     # if profile already made, redirect to profile
     if(alreadyAMember):
         student = functions.getStudent(bNum)
+        name = student[1]
         return redirect( url_for('profile', name = name) )
     else: # if not, create profile
         return redirect( url_for('createProfile') )
