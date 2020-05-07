@@ -32,7 +32,7 @@ Comments {{student.name}} has made:
         {% endfor %}
 </table> 
 
-{% if is_logged_in %}
+{% if session['CAS_USERNAME'] == student.name %}
 <form method=POST action="">
 <label for="major"><p>Update your major</p></label>
               <p><textarea id="major"
@@ -41,6 +41,6 @@ Comments {{student.name}} has made:
       <input type="submit" name="major" value="Update">
     </form>
 
-{% end if %}
+{% endif %}
 
 {% endblock %}
