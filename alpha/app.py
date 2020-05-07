@@ -40,8 +40,6 @@ app.config['CAS_AFTER_LOGIN'] = 'logged_in'
 # Doesn't redirect properly, but not a problem to fix--it is okay:
 app.config['CAS_AFTER_LOGOUT'] = 'after_logout'
 
-# fake bNum for now 4/23/2020 draft version - pre login implementation
-FOObNum = '20000000'
 @app.route('/')
 def index():
     return render_template('home.html', courses = functions.getRecommended())
@@ -56,51 +54,6 @@ def createCourse():
         cid = functions.getCID(courseInfo)
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
-
-@app.route('/createProfile/', methods=['GET','POST'])
-def createProfile():
-    if request.method == 'GET':
-        return render_template('create_profile.html')
-    else:
-        values = request.form
-        bNum = functions.getBNum()
-        student_attributes = list(values.values())
-        student_attributes.insert(0,bNum)
-        studentInfo = functions.insertStudent(student_attributes)
-        return redirect(url_for('uploadPic', n = bNum))
-
-@app.route('/uploadPic/', methods=["GET", "POST"])
-def uploadPic():
-    if request.method == 'GET':
-        return render_template('portrait_upload.html')
-    else:
-        if 'file' not in request.files:
-            flash('No file part')
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-        if file and functions.allowed_picture_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['PORTRAIT_FOLDER'], filename))
-        functions.insertPicture(functions.getBNum(), file.filename)
-        return redirect(url_for('profile'))
-
-@app.route('/loginPage/', methods=['GET'])
-def login():
-    if '_CAS_TOKEN' in session:
-        token = session['_CAS_TOKEN']
-    if 'CAS_USERNAME' in session:
-        is_logged_in = True
-        username = session['CAS_USERNAME']
-    else:
-        is_logged_in = False
-        username = None
-    return render_template('login.html',
-                           username=username,
-                           is_logged_in=is_logged_in,
-                           cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 @app.route('/upload/<int:n>', methods=['GET','POST'])
 def uploadSyllabus(n):
@@ -184,7 +137,7 @@ def showCourse(cid):
         eR = request.form.get('expectRate')
         hW = request.form.get('hoursWk')
         comment = request.form.get('new_comment')
-        functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) # FOR FOObNum, I used functions.getBNum()
+        functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) 
         #have to recalculate the ratings and fetch the comments again
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
@@ -216,9 +169,9 @@ def update(cid):
         print('running basics again')
         print(functions.getBasics(cid))
         return redirect(url_for('updateSyllabus', cid = cid))
+
 '''Just a separate route from the original upload syllabus because the HTML and messaging is slightly diff'''
 @app.route('/updatesyllabus/<int:cid>', methods=['GET','POST'])
-
 def updateSyllabus(cid):
     #uses same functions as upload syllabus...not updating the course table
     if request.method == 'GET':
@@ -236,25 +189,106 @@ def updateSyllabus(cid):
         #bring them back to the updated course page
         return redirect(url_for('showCourse', cid = cid))
 
-@app.route('/profile/<name>', methods =['GET', 'POST'])
-def profile():
-    if request.method == 'GET':
-        
-        return render_template('profile_page.html')
+'''Functions below have to do with logging in, creating a profile, seeing your profile,
+and logging out.'''
+
+@app.route('/loginPage/', methods=['GET'])
+def login():
+    print('running login....')
+    if '_CAS_TOKEN' in session:
+        token = session['_CAS_TOKEN']
+    if 'CAS_USERNAME' in session:
+        is_logged_in = True
+        username = session['CAS_USERNAME']
+    else:
+        is_logged_in = False
+        username = None
+    return render_template('login.html',
+                           username=username,
+                           is_logged_in=is_logged_in,
+                           cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 # Log in CAS stuff:
 @app.route('/logged_in/')
 def logged_in():
+    print('running logged_in....')
     conn = dbi.connect()
-    alreadyAMember = functions.checkUser(conn, functions.getBNum())
+    bNum = functions.getBNum()
+    print('this is the bNum from the session id')
+    print(bNum)
+    alreadyAMember = functions.checkUser(conn, bNum)
+    print('this is the value of alreadyAMember')
+    print(alreadyAMember)
     # if profile already made, redirect to profile
     if(alreadyAMember):
-        return redirect( url_for('profile') )
+        student = functions.getStudent(bNum)
+        print('this is the student profile if it exists')
+        print(student)
+        return redirect( url_for('profile', bNum = bNum) )
     else: # if not, create profile
         return redirect( url_for('createProfile') )
 
+@app.route('/createProfile/', methods=['GET','POST'])
+def createProfile():
+    print('running createProfile....')
+    if request.method == 'GET':
+        return render_template('create_profile.html')
+    else:
+        values = request.form
+        print(functions.getBNum())
+        bNum = functions.getBNum()
+        student_attributes = list(values.values())
+        print('This is student_attributes:')
+        print(student_attributes)
+        student_attributes.insert(0,bNum)
+        print('This is student_attributes after .insert(0,bNum):')
+        print(student_attributes)
+        studentInfo = functions.insertStudent(student_attributes)
+        return redirect(url_for('uploadPic', n = bNum))
+
+@app.route('/uploadPic/', methods=["GET", "POST"])
+def uploadPic():
+    print('running uploadPic....')
+    if request.method == 'GET':
+        return render_template('portrait_upload.html')
+    else:
+        if 'file' not in request.files:
+            flash('No file part')
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+        if file and functions.allowed_picture_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['PORTRAIT_FOLDER'], filename))
+        bNum = functions.getBNum()
+        print(bNum)
+        functions.insertPicture(bNum, file.filename)
+        return redirect(url_for('profile', bNum = bNum))
+
+@app.route('/profile/<bNum>', methods =['GET', 'POST'])
+def profile(bNum):
+    print('running profile....')
+    if request.method == 'GET':
+        student = functions.getStudent(bNum)
+        favorites = functions.getFavoties(bNum)
+        comments = functions.getStudentComments(bNum)
+        return render_template('profile_page.html', 
+                student = student, favorites = favorites, comments = comments)
+    elif request.method == 'POST':
+        newMajor = request.form.get(major)
+        functions.updateMajor(newMajor, bNum)
+        student = functions.getStudent(bNum)
+        favorites = functions.getFavoties(bNum)
+        comments = functions.getStudentComments(bNum)
+        return render_template('profile_page.html', 
+                student = student, favorites = favorites, comments = comments)
+
+
 @app.route('/after_logout/')
 def after_logout():
+    print('running after_logout....')
     flash('successfully logged out!')
     return redirect( url_for('login') )
 

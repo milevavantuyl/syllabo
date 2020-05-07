@@ -109,6 +109,16 @@ def getStudentComments(bNum):
     commentsDict = curs.fetchall()
     conn.commit()
     return commentsDict
+
+def updateMajor(major, bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            UPDATE student  
+            SET major = (%s)
+            WHERE bNum = (%s)''', [major, bNum])
+    commentsDict = curs.fetchall()
+    conn.commit()
     
 # Emily's functions:
 
@@ -119,12 +129,15 @@ def checkUser(conn, bNumber):
     curs.execute('''SELECT bNum 
             FROM student 
             WHERE bNum = (%s)
-            LIMIT 1''', [bNumber])
-    bNumInDB = curs.fetchall()
-    return bNumInDB[0].get('bNum') == bNumber
+        ''', [bNumber])
+    bNumInDB = curs.fetchone()
+    print(bNumInDB)
+    print()
+    return bNumInDB == bNumber
 
 '''Takes all student info as a parameter and uses it to insert the student into the database'''
 def insertStudent(val):
+    print(val)
     conn = dbi.connect()
     curs = dbi.cursor(conn)
     curs.execute('''
@@ -133,10 +146,29 @@ def insertStudent(val):
     val)
     conn.commit()
 
+#sarah's function, for profile page
+'''returns all information about the student given the bNum'''
+def getStudent(bNum):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+    SELECT bNum, name, major, email
+    FROM student 
+    WHERE bNum = %s''', [bNum])
+    conn.commit()
+    student = curs.fetchone()
+    print(student)
+    return student
+
 '''Function to get the bnumber of the logged in student. Prerequisite is that the student is currently logged in'''
 def getBNum():
+    print(session)
     if 'CAS_ATTRIBUTES' in session:
         attribs = session['CAS_ATTRIBUTES']
+        print('this is attribs')
+        print(attribs)
+        print('this is session:')
+        print(session)
         return attribs.get('cas:id')
 
 '''Helper function for uploadPortrait that checks if the file is a picture using filename input'''
