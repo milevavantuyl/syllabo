@@ -55,6 +55,16 @@ def createCourse():
         flash('Your updates have been made, insert another course!')
         return redirect(url_for('uploadSyllabus', n = cid))
 
+@app.route('/createProfile/', methods=['GET','POST'])
+def createProfile():
+    if request.method == 'GET':
+        return render_template('create_profile.html')
+    else:
+        values = request.form
+        studentInfo = functions.insertStudent(list(values.values()))
+        bNum = functions.getBNum(studentInfo)
+        return redirect(url_for('uploadPortrait', n = bNum))
+
 @app.route('/loginPage/', methods=['GET'])
 def login():
     if '_CAS_TOKEN' in session:
@@ -213,10 +223,15 @@ def profile():
 # Log in CAS stuff:
 @app.route('/logged_in/')
 def logged_in():
-    # if profile not made yet, redirect to create profile
-    return redirect( url_for('login') )
-    # if profile in DB
-    # return redirect( url_for('profile') )
+    conn = dbi.connect()
+    if 'CAS_ATTRIBUTES' in session:
+        attribs = session['CAS_ATTRIBUTES']
+        alreadyAMember = functions.checkUser(conn, attribs.get('cas:id'))
+        # if profile already made, redirect to profile
+        if(alreadyAMember):
+            return redirect( url_for('profile') )
+        else: # if not, create profile
+            return redirect( url_for('createProfile') )
 
 @app.route('/after_logout/')
 def after_logout():

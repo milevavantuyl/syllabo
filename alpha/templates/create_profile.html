@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Create a Profile!</h1>
+
+<form method="POST" action="/create/">
+
+    <fieldset>
+    <legend>Profile Info</legend>
+    <table>
+    <tbody><tr><td><label for="student-name"> Name:</label></td>
+        <td><input type="text" name="student-name" value="" id="student-name" placeholder="e.g. Scott Anderson"> </td></tr>
+    <tr><td><label for="student-major">Major:</label></td>
+        <td><input type="text" name="student-major" value="" id="student-major" placeholder="e.g. Computer Science"> </td></tr>
+    <tr><td><label for="student-email">Email:</label></td>
+        <td><input type="text" name="student-email" value="" id="student-email" placeholder="e.g. wendy.well@wellesley.edu"></td></tr>
+    </tbody></table>
+    </fieldset>
+
+    <p> <input type="submit" value="Submit Profile"> </p>
+    
+</form>
+{% endblock %}

@@ -108,6 +108,18 @@ def getStudentComments(bNum):
     conn.commit()
     return commentsDict
     
+# Emily's functions:
+
+'''Input: User bnum,
+Output: true if bnum is in database, false otherwise'''
+def checkUser(conn, bNumber):
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT TOP 1 bNum 
+            FROM student 
+            WHERE bNum = %s''', [bNumber])
+    bNumInDB = curs.fetchall()
+    return bNumInDB == bNumber
+
 # Mileva's functions:
 
 ''' Input: User search query and kind of query, 
