@@ -52,7 +52,7 @@ def createCourse():
         values = request.form
         courseInfo = functions.insertCourse(list(values.values()))
         cid = functions.getCID(courseInfo)
-        flash('Your updates have been made, insert another course!')
+        flash('Your updates have been made!')
         return redirect(url_for('uploadSyllabus', n = cid))
 
 @app.route('/upload/<int:n>', methods=['GET','POST'])
