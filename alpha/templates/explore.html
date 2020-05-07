@@ -8,15 +8,19 @@
         <h4>{{course.cnum}}: {{course.title}}</h4>
         
         {% set rating = course.ratings %}
-        <p> Relevancy: {{rating.relev if rating.relev != none else "No Rating"}}, 
-            Usefulness: {{rating.useful if rating.useful != none else "No Rating"}}, 
-            Difficulty: {{rating.diff if rating.diff != none else "No Rating"}}, 
-            Expectations: {{rating.expect if rating.expect!= none else "No Rating"}}, 
-            Hours per week: {{rating.hoursWk if rating.hoursWk != none else "No Rating" }}</p>
+        {% if not rating.relev and not rating.useful and not rating.diff and not rating.expect and not rating.hoursWk %}
+            <p> No ratings available for this course.</p>
+        {% else %}
+            <p> Relevancy: {{rating.relev if rating.relev != none else "No Rating"}}, 
+                Usefulness: {{rating.useful if rating.useful != none else "No Rating"}}, 
+                Difficulty: {{rating.diff if rating.diff != none else "No Rating"}}, 
+                Expectations: {{rating.expect if rating.expect!= none else "No Rating"}}, 
+                Amount of Work: {{rating.hoursWk if rating.hoursWk != none else "No Rating" }}</p>
+        {% endif %}
 
         {% for section in course.sections %}
             <ul> 
-                <li> <a href='/course/{{section.cid}}'>{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
+                <li> <a href="{{ url_for('showCourse', cid = section.cid)}}">{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
             </ul>
         {% endfor %}
     </div>
