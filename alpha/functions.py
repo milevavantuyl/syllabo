@@ -10,6 +10,8 @@ import os
 UPLOAD_FOLDER = 'upload_folder'
 ALLOWED_EXTENSIONS = {'pdf'}
 
+PICTURE_EXTENSTIONS = {'jpg', 'png', 'jpeg'}
+
 app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -136,6 +138,25 @@ def getBNum():
     if 'CAS_ATTRIBUTES' in session:
         attribs = session['CAS_ATTRIBUTES']
         return attribs.get('cas:id')
+
+'''Helper function for uploadPortrait that checks if the file is a picture using filename input'''
+def allowed_picture_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in PICTURE_EXTENSTIONS
+
+'''Helper function for uploadPortrait that puts the filename in the database in the portrait table
+INPUT: '''
+def insertPicture(bNum, pic_file):
+    try:
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        curs.execute('''
+                INSERT into syllabi(cid, filename) VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE filename = %s''', [bNum, pic_file, pic_file])
+        conn.commit()
+        flash('Upload successful')
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
 
 # Mileva's functions:
 

@@ -8,6 +8,7 @@ import functions
 
 UPLOAD_FOLDER = 'upload_folder'
 ALLOWED_EXTENSIONS = {'pdf'}
+PORTRAIT_FOLDER = 'upload_folder'
 
 app = Flask(__name__)
 
@@ -16,6 +17,7 @@ from flask_cas import CAS
 CAS(app)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PORTRAIT_FOLDER'] = PORTRAIT_FOLDER
 
 app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 
@@ -70,32 +72,20 @@ def createProfile():
 @app.route('/uploadPic/', methods=["GET", "POST"])
 def uploadPic():
     if request.method == 'GET':
-        return render_template('portrait_upload.html',src='',nm='')
+        return render_template('portrait_upload.html')
     else:
-        try:
-            print("THISTHISTHIS")
-            nm = int(functions.getBNum) # may throw error
-            f = request.files['pic']
-            user_filename = f.filename
-            ext = user_filename.split('.')[-1]
-            filename = secure_filename('{}.{}'.format(nm,ext))
-            pathname = os.path.join(app.config['UPLOADS'],filename)
-            f.save(pathname)
-            conn = dbi.connect()
-            curs = dbi.dict_cursor(conn)
-            curs.execute(
-                '''insert into portrait(bNum,filename) values (%s,%s)
-                   on duplicate key update filename = %s''',
-                [nm, filename, filename])
-            conn.commit()
-            flash('Upload successful')
-            return render_template('profile_page.html',
-                                   src=url_for('pic',nm=nm),
-                                   nm=nm)
-        except Exception as err:
-            flash('Upload failed {why}'.format(why=err))
-            return render_template('portrait_upload.html',src='',nm='')
-            
+        if 'file' not in request.files:
+            flash('No file part')
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+        if file and functions.allowed_picture_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['PORTRAIT_FOLDER'], filename))
+        functions.insertPicture(functions.getBNum(), file.filename)
+        return redirect(url_for('profile'))
 
 @app.route('/loginPage/', methods=['GET'])
 def login():
