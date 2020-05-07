@@ -24,7 +24,7 @@ def getBasics(cid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
-            SELECT title, dep, cnum, crn, syl, web, yr, sem, prof, cid
+            SELECT title, dep, cnum, crn, web, yr, sem, prof, cid
             FROM course
             WHERE cid = (%s)''', [cid])
     basicsDict = curs.fetchone()

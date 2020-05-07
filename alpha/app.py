@@ -184,7 +184,7 @@ def showCourse(cid):
         eR = request.form.get('expectRate')
         hW = request.form.get('hoursWk')
         comment = request.form.get('new_comment')
-        functions.makeRatings(FOObNum, cid, rR, uR, dR, eR, hW, comment)
+        functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) # FOR FOObNum, I used functions.getBNum()
         #have to recalculate the ratings and fetch the comments again
         avgRatings = functions.getAvgRatings(cid)
         comments = functions.getComments(cid)
