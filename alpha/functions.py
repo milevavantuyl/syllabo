@@ -158,6 +158,21 @@ def getStudent(bNum):
     conn.commit()
     student = curs.fetchone()
     print(student)
+    print(student['name'])
+    return student
+
+'''returns all information about the student given the bNum'''
+def getStudentFromName(name):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+    SELECT bNum, name, major, email
+    FROM student 
+    WHERE bNum = %s''', [name])
+    conn.commit()
+    student = curs.fetchone()
+    print(student)
+    print(student['name'])
     return student
 
 '''Function to get the bnumber of the logged in student. Prerequisite is that the student is currently logged in'''

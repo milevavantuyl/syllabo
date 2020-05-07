@@ -224,7 +224,8 @@ def logged_in():
         student = functions.getStudent(bNum)
         print('this is the student profile if it exists')
         print(student)
-        return redirect( url_for('profile', bNum = bNum) )
+        name = student['name']
+        return redirect( url_for('profile', name = name) )
     else: # if not, create profile
         return redirect( url_for('createProfile') )
 
@@ -264,14 +265,17 @@ def uploadPic():
             file.save(os.path.join(app.config['PORTRAIT_FOLDER'], filename))
         bNum = functions.getBNum()
         print(bNum)
+        student = functions.getStudent()
+        name = student['name']
         functions.insertPicture(bNum, file.filename)
-        return redirect(url_for('profile', bNum = bNum))
+        return redirect(url_for('profile', name = name))
 
-@app.route('/profile/<bNum>', methods =['GET', 'POST'])
-def profile(bNum):
+@app.route('/profile/<name>', methods =['GET', 'POST'])
+def profile(name):
     print('running profile....')
+    student = functions.getStudentFromName(name)
+    bNum = student['bNum']
     if request.method == 'GET':
-        student = functions.getStudent(bNum)
         favorites = functions.getFavoties(bNum)
         comments = functions.getStudentComments(bNum)
         return render_template('profile_page.html', 
@@ -279,7 +283,6 @@ def profile(bNum):
     elif request.method == 'POST':
         newMajor = request.form.get(major)
         functions.updateMajor(newMajor, bNum)
-        student = functions.getStudent(bNum)
         favorites = functions.getFavoties(bNum)
         comments = functions.getStudentComments(bNum)
         return render_template('profile_page.html', 
