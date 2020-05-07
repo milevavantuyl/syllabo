@@ -18,14 +18,13 @@
         </div>
     {% endif %}
 {% endwith %}
-
 {% block nav_bar %}
 <ul id="nav_bar">
     <li><a href= "{{url_for('index')}}">Syllabo</a></li>
     <li><a href= "{{url_for('createCourse')}}">Create a Course</a></li>
     <li><a href= "{{url_for('explore')}}">Explore Courses</a></li>
     <li><a href= "{{url_for('login')}}">Profile</a></li>
-</ul>
+
 {% endblock %}
 
 {% block search_bar %}
@@ -41,7 +40,7 @@
         </label>
         <input type="submit" value="search"></p>
 </form>
-
+</ul>
 {% endblock %}
 
 {% block main_content %}

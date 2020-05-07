@@ -54,6 +54,12 @@ h3, th {
     color: rgb(7, 103, 158);
 }
 
+#search_bar {
+    color: white;
+    float: right;
+    margin: 0px 14px;
+}
+
 #nav_bar{
     list-style-type: none;
     margin: 0px; 
@@ -68,10 +74,10 @@ h3, th {
 }
 
 #nav_bar li a {
-    display: block; 
+    display: inline-block; 
     color: white;
     text-align: center;
-    padding: 14px 20px;
+    padding: 17px 20px;
     text-decoration: none;
 } 
 
@@ -94,6 +100,8 @@ h3, th {
     color: rgb(20, 18, 150);
     font-size: 125%;
 }
+
+
 
 /* Create three equal columns that floats next to each other */
 .column {
