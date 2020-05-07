@@ -151,7 +151,7 @@ def insertPicture(bNum, pic_file):
         conn = dbi.connect()
         curs = dbi.dict_cursor(conn)
         curs.execute('''
-                INSERT into syllabi(cid, filename) VALUES (%s, %s)
+                INSERT into portrait(bNum, filename) VALUES (%s, %s)
                     ON DUPLICATE KEY UPDATE filename = %s''', [bNum, pic_file, pic_file])
         conn.commit()
         flash('Upload successful')
