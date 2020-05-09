@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
+    <meta name=description content="Syllabo Wellesley Syllabus Database">
+    <title> {{title}} </title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='/style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+{% block nav_bar %}
+<ul id="nav_bar">
+    <li><a href= "{{url_for('index')}}">Syllabo</a></li>
+    <li><a href= "{{url_for('createCourse')}}">Create a Course</a></li>
+    <li><a href= "{{url_for('explore')}}">Explore Courses</a></li>
+    <li><a href= "{{url_for('login')}}">Profile</a></li>
+
+{% endblock %}
+
+{% block search_bar %}
+<form method="GET" action="{{url_for('search')}}" id="search_bar">
+    <p><label>Search: <input type="text" name="search" required></label>
+        <label>Search by: 
+            <select name="type">
+                <option value="title">Course Title</option>
+                <option value="dep">Course Department</option> 
+                <option value="cnum">Course Number</option>
+                <option value="prof">Course Professor</option>
+            </select>
+        </label>
+        <input type="submit" value="search"></p>
+</form>
+</ul>
+{% endblock %}
+
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+
+</body>
+</html>

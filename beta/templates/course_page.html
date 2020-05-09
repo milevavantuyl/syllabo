@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block head_stuff%}
+<title>Course Page</title>
+{% endblock %}
+
+
+{% block main_content %}
+
+<div class = "row">
+  <div class = "column">
+    <h2>{{basics.title}}</h2>
+    <h2>{{basics.cnum}}</h2>
+  
+    <table id="basics">
+        <tr>
+            <td>Department</td>
+            <td>{{basics.dep}}</td>
+        </tr>
+        <tr>
+            <td>Professor</td>
+            <td>{{basics.prof}}</td>
+        </tr>
+        <tr>
+          <td>Semester</td>
+          <td>{{basics.sem}}</td>
+        </tr>
+        <tr>
+          <td>Year</td>
+          <td>{{basics.yr}}</td>
+        </tr>
+        <tr>
+          <td>CRN</td>
+          <td>{{basics.crn}}</td>
+        </tr>
+      </table>
+      
+      <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
+
+      {% if basics.web %}
+        <h3>Course Website</h3>             
+        <iframe src={{basics.web}} width="80%" height="400px">
+        </iframe>  
+      {% else %}
+        <h4>No course website yet! </h4>
+      {% endif %}
+
+      <h3>Course Syllabus</h3>    
+      <iframe src="{{url_for('getPDF',cid=basics.cid)}}" width= "100%" height= "700px">
+      </iframe>
+
+      <table id="ratings">
+        <tr>
+          <th>Ratings</th>
+        </tr> 
+      </tr> 
+        <tr>
+            <td>Usefulness for major</td>
+            <td>{{avgRatings.useful}}</td>
+        </tr>
+        <tr>
+            <td>Difficulty</td>
+            <td>{{avgRatings.diff}}</td>
+        </tr>
+        <tr>
+          <td>Relevance of course assignments</td>
+          <td>{{avgRatings.rel}}</td>
+        </tr>
+        <tr>
+          <td>Expectations were clearly defined</td>
+          <td>{{avgRatings.exp}}</td>
+        </tr>
+        <tr>
+          <td>How time consuming</td>
+          <td>{{avgRatings.hrsWk}}</td>
+        </tr>
+    </table>    
+
+      <p>How did other students find this course?</p>
+      
+      <table id="comments" style="width:100%">
+      {% for comment in comments %}
+          <tr>
+            <td><a href="{{ url_for('profile', name = comment.name) }}">{{comment.name}}</a></td>
+            <td>{{comment.comment}}</td>
+        </tr>
+    	{% endfor %}
+    </table> 
+  </div>
+    <div class = "column" id = "rate">
+    
+    <h3>How would you rate this course?</h3>
+
+    <form method=POST action="">
+      
+      <label for="usefulRate"><p> On a scale from 1-5, 1 being useless and 5 being 
+        most useful, how useful do you find {{basics.cnum}} is for the {{basics.dep}} major?</p></label>
+      <select id="usefulRate" name = "usefulRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      
+      <label for="diffRate"><p> On a scale from 1-5, 1 being very easy and 5 being
+        very challenging, how difficult did you find the material for {{basics.cnum}}?</p></label>
+      <select id="diffRate" name = "diffRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="relevRate"><p> On a scale from 1-5, 1 being irrelevant and 5 being 
+        most relevant, how relevant did you find the course assignments for {{basics.cnum}}?</p></label>
+      <select id="relevRate" name = "relevRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="expectRate"><p> On a scale from 1-5, 1 being extremely vague and 5 being crystal clear, how clear did you find Professor {{basics.prof}}'s expectations of students for {{basics.cnum}}?</p></label>
+      <select id="expectRate" name = "expectRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="hoursWk"><p> On a scale from 1-5, 1 being hardly requiring any time at all
+         and 5 being your most time consuming course ever, how demanding of your time did you find {{basics.cnum}}?</p></label> 
+      <select id="hoursWk" name = "hoursWk">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+        
+      
+      <label for="new_comment"><p>Is there anything you'd like to share about {{basics.cnum}}: {{basics.title}}?</p></label>
+              <p><textarea id="new_comment"
+                          name="new_comment"
+                          rows="6" cols="40"></textarea></p>
+      <input type="submit" name="submit" value="rate">
+    </form>
+    <form id="favorite" action="">
+      <input type="submit" value="Add to Favorites">
+    </form> 
+    
+  </div>
+  </div>
+     
+    {% endblock %}

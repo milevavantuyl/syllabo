@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1> Search Results</h1>
+<p id="query_string"> Query "{{query}}" by course details</p>
+
+    {% for course in courses %}
+    <div class="result">
+        <h4>{{course.cnum}}: {{course.title}}</h4>
+
+        {% set rating = course.ratings %}
+        {% if not rating.relev and not rating.useful and not rating.diff and not rating.expect and not rating.hoursWk %}
+            <p> No ratings available for this course.</p>
+        {% else %}
+            <table>
+                <tr>
+                    <td>Relevancy</td>
+                    <td>{{rating.relev if rating.relev != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Usefulness</td>
+                    <td>{{rating.useful if rating.useful != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Difficulty</td>
+                    <td>{{rating.diff if rating.diff != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Expectations</td>
+                    <td>{{rating.expect if rating.expect!= none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Amount of Work</td>
+                    <td>{{rating.hoursWk if rating.hoursWk != none else "No Rating" }}</td>
+                </tr>
+            </table>
+        {% endif %}
+
+        {% for section in course.sections %}
+            <ul> 
+                <li> <a href="{{url_for('showCourse', cid = section.cid)}}">{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
+            </ul>
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% endblock %}

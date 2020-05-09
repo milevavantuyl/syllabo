@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1> Search Results</h1>
+<p id="query_string"> Query "{{query}}" by professor name</p>
+
+    {% for prof in profs %}
+    <div class="result">
+        <h4>{{prof.prof}}</h4>
+            {% for section in prof.sections %}
+                <ul> 
+                    <li> <a href="{{url_for('showCourse', cid = section.cid)}}">{{section.cnum}}: {{section.title}}, {{section.sem}} {{section.yr}}  </a></li>
+                </ul>
+            {% endfor %}
+    </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1 id ="title"> syllabo </h1>
+
+<div id = "welcome">
+<h2>Welcome!</h2>
+
+<p> syllabo is a space for Wellesley students to rave about their favorite courses,
+    find which ones to take next, and share course syllabi with their sibs. 
+    No more tracking down course inquiries on Facebook and commenting, "following!" 
+    to find out if it's a class worth taking.</p>
+
+</div>
+
+<div id = "reccomended">
+<h2>Folks on syllabo recommend:</h2>
+    <ul class = "a">
+        {% for course in courses %}
+        <li>
+            <a href="{{ url_for('showCourse', cid=course.cid) }}"> {{course.title}} </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

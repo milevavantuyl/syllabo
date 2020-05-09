@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block head_stuff%}
+<title>Welcome, log in!</title>
+{% endblock %}
+
+{% block main_content %}
+            
+{% if username %}
+   <form method="GET" action="{{url_for('cas.logout')}}"><button>logout {{username}}</button></form>
+   <form method="GET" action="{{url_for('profile')}}"></form>
+
+{% else %}
+   <form method="GET" action="{{url_for('cas.login')}}"><button>login</button></form>
+{% endif %}   
+
+{% endblock %}

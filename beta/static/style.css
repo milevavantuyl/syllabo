@@ -1,0 +1,125 @@
+/* For flashed messages; make them stand out using red and italics */
+
+* {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+#messages {
+    color: red;
+    font-style: italic;
+}
+
+#welcome, #reccomended, #create_course_table{
+    width: 80%;
+    border: 15px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+
+#rate{
+    width: 40%;
+    border: 15px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+
+th {
+    text-align: center;
+}
+
+ul.a {
+    list-style-type: square;
+}
+
+h1 {
+    position: relative;
+    left: 40%;
+    font-size: 250%;
+    color: rgb(20, 18, 150);
+}
+
+h2 {
+    position: relative;
+    text-align: center;
+    font-size: 150%;
+    color: rgb(7, 103, 158);
+}
+
+h3, th {
+    text-align: center;
+    font-size: 100%;
+    color: rgb(7, 103, 158);
+}
+
+#search_bar {
+    color: white;
+    float: right;
+    margin: 0px 14px;
+}
+
+#nav_bar{
+    list-style-type: none;
+    margin: 0px; 
+    padding: 0px;
+    overflow: hidden;
+    background-color: rgb(20, 18, 150);
+    /* position: fixed; */
+}
+
+#nav_bar li {
+    float: left;
+}
+
+#nav_bar li a {
+    display: inline-block; 
+    color: white;
+    text-align: center;
+    padding: 17px 20px;
+    text-decoration: none;
+} 
+
+#nav_bar li a:hover{
+    background-color:rgb(188, 207, 255);
+    color: black;
+}
+
+.result {
+    border: 10px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 15px;
+    margin: 10px;
+}
+
+#query_string {
+    text-align: center;
+    font-weight: bold; 
+    color: rgb(20, 18, 150);
+    font-size: 125%;
+}
+
+
+
+/* Create three equal columns that floats next to each other */
+.column {
+    float: left;
+    width: 40%;
+    padding: 15px;
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  
+  /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+  @media screen and (max-width:600px) {
+    .column {
+      width: 100%;
+    }
+  }

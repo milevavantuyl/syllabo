@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<title>{{student.name}}</title>
+<img src="" alt="Profile picture for {{student.name}}" style="height:200px;">
+<table id="info">
+    <tr>
+        <td>{{student.email}}</td>
+    </tr>
+    <tr>
+        <td>{{student.major}}</td>
+    </tr>
+</table>
+
+Comments {{student.name}} has made:
+<table id="comments">
+    {% for comment in comments %}
+        <tr>
+            <td>{{comment.title}}</td>
+            <td>{{comment.comment}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+{{student.name}}'s favorite courses:
+<table id="favorites">
+    {% for favorite in favorites %}
+        <tr>
+            <td> <a href="{{url_for('showCourse', cid = favorite.cid)}}"></a>{{favorite.name}}</td>
+        </tr>
+        {% endfor %}
+</table> 
+
+{% if session['CAS_USERNAME'] == student.name %}
+<form method=POST action="">
+<label for="major"><p>Update your major</p></label>
+              <p><textarea id="major"
+                          name="major"
+                          rows="1" cols="40"></textarea></p>
+      <input type="submit" name="major" value="Update">
+    </form>
+
+{% endif %}
+
+{% endblock %}
