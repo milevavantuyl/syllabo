@@ -120,7 +120,7 @@ def updateMajor(major, bNum):
     commentsDict = curs.fetchall()
     conn.commit()
     
-# Emily's functions:
+# Emily's functions for login and creating profile:
 
 '''Input: User bnum,
 Output: true if bnum is in database, false otherwise'''
@@ -143,33 +143,6 @@ def insertStudent(val):
     VALUES(%s, %s, %s, %s)''', 
     val)
     conn.commit()
-
-#sarah's function, for profile page
-'''returns all information about the student given the bNum'''
-def getStudent(bNum):
-    print(bNum)
-    conn = dbi.connect()
-    curs = dbi.cursor(conn)
-    curs.execute('''
-            SELECT *
-            FROM student 
-            WHERE bNum = %s''', [bNum])
-    conn.commit()
-    student = curs.fetchone()
-    return student
-
-'''returns all information about the student given the bNum'''
-def getStudentFromName(name):
-    conn = dbi.connect()
-    curs = dbi.cursor(conn)
-    curs.execute('''
-            SELECT bNum, name, major, email
-            FROM student 
-            WHERE name = %s''', [name])
-    conn.commit()
-    student = curs.fetchone()
-    print(student)
-    return student
 
 '''Function to get the bnumber of the logged in student. Prerequisite is that the student is currently logged in'''
 def getBNum():
@@ -200,6 +173,33 @@ def insertPicture(bNum, pic_file):
         flash('Upload successful')
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
+        
+#sarah's function, for profile page
+'''returns all information about the student given the bNum'''
+def getStudent(bNum):
+    print(bNum)
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+            SELECT *
+            FROM student 
+            WHERE bNum = %s''', [bNum])
+    conn.commit()
+    student = curs.fetchone()
+    return student
+
+'''returns all information about the student given the bNum'''
+def getStudentFromName(name):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+            SELECT bNum, name, major, email
+            FROM student 
+            WHERE name = %s''', [name])
+    conn.commit()
+    student = curs.fetchone()
+    print(student)
+    return student
 
 # Mileva's functions:
 
