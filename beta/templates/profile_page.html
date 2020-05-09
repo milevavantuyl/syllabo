@@ -32,7 +32,7 @@ Comments {{student.name}} has made:
         {% endfor %}
 </table> 
 
-{% if session['CAS_USERNAME'] == student.name %}
+{% if student.major == student.name %}
 <form method=POST action="">
 <label for="major"><p>Update your major</p></label>
               <p><textarea id="major"

@@ -200,13 +200,13 @@ def login():
     else:
         is_logged_in = False
         username = None
-    if is_logged_in:
+    if is_logged_in: # only occurs for first time login
         conn = dbi.connect()
         bNum = functions.getBNum()
         student = functions.getStudent(bNum)
         name = student[1]
         return redirect( url_for('profile', name = name) )
-    else:
+    else: 
         return render_template('login.html',
                            username=username,
                            is_logged_in=is_logged_in,

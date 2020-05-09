@@ -131,11 +131,11 @@ def checkUser(conn, bNumber):
             WHERE bNum = (%s)
         ''', [bNumber])
     bNumInDB = curs.fetchone()
-    return bNumInDB.get('bNum') == bNumber
+    # Checks if there is no Bnum that matches in database
+    return bNumInDB != None 
 
 '''Takes all student info as a parameter and uses it to insert the student into the database'''
 def insertStudent(val):
-    print(val)
     conn = dbi.connect()
     curs = dbi.cursor(conn)
     curs.execute('''
@@ -146,13 +146,8 @@ def insertStudent(val):
 
 '''Function to get the bnumber of the logged in student. Prerequisite is that the student is currently logged in'''
 def getBNum():
-    print(session)
     if 'CAS_ATTRIBUTES' in session:
         attribs = session['CAS_ATTRIBUTES']
-        print('this is attribs')
-        print(attribs)
-        print('this is session:')
-        print(session)
         return attribs.get('cas:id')
 
 '''Helper function for uploadPortrait that checks if the file is a picture using filename input'''
@@ -173,11 +168,10 @@ def insertPicture(bNum, pic_file):
         flash('Upload successful')
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
-        
+
 #sarah's function, for profile page
 '''returns all information about the student given the bNum'''
 def getStudent(bNum):
-    print(bNum)
     conn = dbi.connect()
     curs = dbi.cursor(conn)
     curs.execute('''
@@ -198,7 +192,6 @@ def getStudentFromName(name):
             WHERE name = %s''', [name])
     conn.commit()
     student = curs.fetchone()
-    print(student)
     return student
 
 # Mileva's functions:
