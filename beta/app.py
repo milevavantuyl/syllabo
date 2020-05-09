@@ -262,20 +262,20 @@ def uploadPic():
 @app.route('/profile/<name>', methods =['GET', 'POST'])
 def profile(name):
     student = functions.getStudentFromName(name)
-    studentDict = {'bnum': student[0], 'name': student[1], 'major': student[2], 'email': student[3]}
+    studentDict = {'bNum': student[0], 'name': student[1], 'major': student[2], 'email': student[3]}
     bNum = student[0]
     if request.method == 'GET':
         favorites = functions.getFavorites(bNum)
         comments = functions.getStudentComments(bNum)
         return render_template('profile_page.html', 
-                student = studentDict, favorites = favorites, comments = comments)
+                student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
     elif request.method == 'POST':
         newMajor = request.form.get(major)
         functions.updateMajor(newMajor, bNum)
         favorites = functions.getFavoties(bNum)
         comments = functions.getStudentComments(bNum)
         return render_template('profile_page.html', 
-                student = student, favorites = favorites, comments = comments)
+                student = student, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 
 @app.route('/after_logout/')

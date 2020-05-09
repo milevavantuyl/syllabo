@@ -32,9 +32,10 @@ Comments {{student.name}} has made:
         {% endfor %}
 </table> 
 
-{% if student.major == student.name %}
-<form method=POST action="">
-<label for="major"><p>Update your major</p></label>
+{% if student.bNum == cas_attributes.get("cas:id") %}
+    <p>Hello!</p>
+    <form method=POST action="">
+    <label for="major"><p>Update your major</p></label>
               <p><textarea id="major"
                           name="major"
                           rows="1" cols="40"></textarea></p>
