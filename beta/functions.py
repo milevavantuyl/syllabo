@@ -206,7 +206,7 @@ def getCourses(conn, query, kind):
                         FROM course
                         WHERE {} like %s
                         ORDER BY cnum ASC, title ASC'''.format(kind), 
-                        ['%' + query + '%']) 
+                        [query + '%']) 
         courses = curs.fetchall()
 
         # Finds all sections associated with each distinct course
@@ -239,7 +239,7 @@ def getCoursesByProf(conn, query):
     curs.execute('''SELECT distinct prof 
                     FROM course
                     WHERE prof like %s
-                    ORDER BY prof ASC''', ['%' + query + '%'])
+                    ORDER BY prof ASC''', [query + '%'])
     profs = curs.fetchall()
 
     for prof in profs: 
@@ -268,7 +268,6 @@ def getSections(conn, cnum, title):
                     FROM course 
                     WHERE cnum = %s and title = %s
                     ORDER BY yr DESC''', [cnum, title])
-                    # sort by semester too? 
     sections = curs.fetchall()
     return sections
 
@@ -293,7 +292,7 @@ def numSections(conn, query, kind):
     if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
         curs.execute('''SELECT count(*) 
                         FROM course
-                        WHERE {} like %s'''.format(kind), ['%' + query + '%'])
+                        WHERE {} like %s'''.format(kind), [query + '%'])
         num = curs.fetchone()
         return num[0]
 
@@ -304,7 +303,7 @@ def getOneResult(conn, query, kind):
     if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
         curs.execute('''SELECT cid, cnum
                         FROM course
-                        WHERE {} like %s'''.format(kind), ['%' + query + '%']
+                        WHERE {} like %s'''.format(kind), [query + '%']
                     ) 
         section = curs.fetchone()
         return section['cid']
