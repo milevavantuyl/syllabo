@@ -130,14 +130,11 @@ def showCourse(cid):
                                 comments=comments)
     elif request.method == 'POST':
         action = request.form.get("submit")
-        print(action)
         if action == 'Add to Favorites' :
-            print("trying to add to favorites")
             try: 
                 bNum = functions.getBNum()
                 print(bNum)
                 functions.addFavorite(bNum, basics['cid'])
-                print(functions.getFavorites(bNum))
                 avgRatings = functions.getAvgRatings(cid)
                 comments = functions.getComments(cid)
                 flash('Course added to favorites')

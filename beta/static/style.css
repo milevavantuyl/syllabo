@@ -69,6 +69,10 @@ h3, th {
     color: rgb(7, 103, 158);
 }
 
+h4 {
+    font-size: 115%;
+}
+
 #search_bar {
     color: white;
     float: right;
@@ -109,6 +113,10 @@ h3, th {
     margin: 10px;
 }
 
+.result ul {
+    list-style-type: square;
+}
+
 #query_string {
     text-align: center;
     font-weight: bold; 
@@ -116,6 +124,42 @@ h3, th {
     font-size: 125%;
 }
 
+.course {
+    border: 0.5px; 
+    border-style: solid; 
+    border-color: rgb(184, 204, 253);
+    padding: 5px;
+    margin: 10px;
+}
+
+.course ul {
+    list-style-type: square;
+}
+
+.accordion {
+    background-color: rgb(215, 227, 255);
+    color: black; 
+    cursor: pointer; 
+    padding: 15px; 
+    width: 100%;
+    text-align: left; 
+    outline: none;
+    font-size: 20px; 
+    transition: 0.4s; 
+}
+
+.active, .accordion:hover {
+    background-color: rgb(184, 204, 253);
+}
+
+.panel {
+    padding: 15px;
+    display: none;
+    background-color: white;
+    overflow: hidden; 
+    border: 10px; 
+    border-color: black;
+}
 
 
 /* Create three equal columns that floats next to each other */
