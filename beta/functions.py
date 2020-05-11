@@ -63,13 +63,23 @@ def getComments(cid):
     and all other columns from the rating form submitted by the user
     found on the course page.'''
 def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment):
-    conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    query = curs.execute('''
-            INSERT INTO rates(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
-            [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
-    conn.commit()
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        query = curs.execute('''
+                INSERT INTO rates(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
+                [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
+        conn.commit()
+
+'''adds a course to a students "favorites"'''
+def addFavorite(bNum, cid):
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        query = curs.execute('''
+                INSERT INTO favorites(bNum, cid)
+                VALUES (%s, %s)''', 
+                [bNum, cid])
+        conn.commit()
 
 '''updateCourse() allows the user to update any information about the course'''
 def updateCourse(updates, cid):
@@ -96,6 +106,7 @@ def getFavorites(bNum):
     favoritesDict = curs.fetchall()
     conn.commit()
     return favoritesDict
+    
 
 '''getStudentComments() returns a dictionary of all of the comments a certain student has made
 given the bNum. This information will be displayed on their profile.'''
@@ -365,5 +376,4 @@ if __name__ == '__main__':
    dbi.cache_cnf()   # defaults to ~/.my.cnf
    dbi.use('syllabo_db')
    conn = dbi.connect()
-   print(getFavorites(20000000))
 

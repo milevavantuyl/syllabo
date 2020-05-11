@@ -8,13 +8,28 @@
     font-style: italic;
 }
 
-#welcome, #reccomended, #create_course_table{
+#welcome, #reccomended, #create_course_table {
     width: 80%;
     border: 15px;
     border-style: solid;
     border-color: rgb(188, 207, 255);
     padding: 25px;
     margin: 20px;
+}
+
+#student-comments, #favorites {
+    width: 80%;
+    border: 5px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+#student-comments tr:nth-child(even) #favorites tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+#student-comments th, #favorites th {
+    font-weight: bold;
 }
 
 #rate{

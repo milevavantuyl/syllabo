@@ -129,20 +129,39 @@ def showCourse(cid):
         return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
     elif request.method == 'POST':
-        #user is rating (which includes commenting) the course.
-        uR = request.form.get('usefulRate')
-        dR = request.form.get('diffRate')
-        rR = request.form.get('relevRate')
-        eR = request.form.get('expectRate')
-        hW = request.form.get('hoursWk')
-        comment = request.form.get('new_comment')
-        functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) 
-        #have to recalculate the ratings and fetch the comments again
-        avgRatings = functions.getAvgRatings(cid)
-        comments = functions.getComments(cid)
-        #now we render the page again
-        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+        action = request.form.get("submit")
+        print(action)
+        if action == 'Add to Favorites' :
+            print("trying to add to favorites")
+            try: 
+                bNum = functions.getBNum()
+                print(bNum)
+                functions.addFavorite(bNum, basics['cid'])
+                print(functions.getFavorites(bNum))
+                avgRatings = functions.getAvgRatings(cid)
+                comments = functions.getComments(cid)
+                flash('Course added to favorites')
+                return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
+            except Exception as err:
+                print(err)
+                flash(err) 
+        elif action == 'Rate':
+            print('trying to rate/comment')
+            #user is rating (which includes commenting) the course.
+            uR = request.form.get('usefulRate')
+            dR = request.form.get('diffRate')
+            rR = request.form.get('relevRate')
+            eR = request.form.get('expectRate')
+            hW = request.form.get('hoursWk')
+            comment = request.form.get('new_comment')
+            functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) 
+            #have to recalculate the ratings and fetch the comments again
+            avgRatings = functions.getAvgRatings(cid)
+            comments = functions.getComments(cid)
+            #now we render the page again
+            return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                    comments=comments)
 
 @app.route('/pdf/<cid>')
 def getPDF(cid):
@@ -154,6 +173,19 @@ def getPDF(cid):
     row = curs.fetchone()
     if row['filename'] == '' or row == None:
         return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
+    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+
+
+@app.route('/pic/<bNum>')
+def getPic(bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute(
+        '''select filename from portrait where bNum = %s''',
+        [bNum])
+    row = curs.fetchone()
+    if row['filename'] == '' or row == None:
+        return send_from_directory(app.config['UPLOAD_FOLDER'],'NoPropic.png')
     return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
@@ -262,20 +294,24 @@ def uploadPic():
 @app.route('/profile/<name>', methods =['GET', 'POST'])
 def profile(name):
     student = functions.getStudentFromName(name)
-    studentDict = {'bNum': student[0], 'name': student[1], 'major': student[2], 'email': student[3]}
-    bNum = student[0]
+    studentDict = {'bNum': student[0], 'name': student[1], 'email': student[3]}
+    bNum = studentDict['bNum']
     if request.method == 'GET':
+        studentDict['major'] = student[2]
         favorites = functions.getFavorites(bNum)
         comments = functions.getStudentComments(bNum)
         return render_template('profile_page.html', 
                 student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
     elif request.method == 'POST':
-        newMajor = request.form.get(major)
+        newMajor = request.form.get('major')
         functions.updateMajor(newMajor, bNum)
-        favorites = functions.getFavoties(bNum)
+        student = functions.getStudentFromName(name)
+        studentDict['major'] = student[2]
+        favorites = functions.getFavorites(bNum)
         comments = functions.getStudentComments(bNum)
+        print(student)
         return render_template('profile_page.html', 
-                student = student, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+                student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 
 @app.route('/after_logout/')

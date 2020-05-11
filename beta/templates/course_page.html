@@ -36,7 +36,7 @@
       </table>
       
       <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
-
+      
       {% if basics.web %}
         <h3>Course Website</h3>             
         <iframe src={{basics.web}} width="80%" height="400px">
@@ -144,11 +144,9 @@
               <p><textarea id="new_comment"
                           name="new_comment"
                           rows="6" cols="40"></textarea></p>
-      <input type="submit" name="submit" value="rate">
+      <input type="submit" name="submit" value="Rate">
+      <input type="submit" name="submit" value="Add to Favorites">
     </form>
-    <form id="favorite" action="">
-      <input type="submit" value="Add to Favorites">
-    </form> 
     
   </div>
   </div>
