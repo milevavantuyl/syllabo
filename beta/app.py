@@ -168,9 +168,11 @@ def getPDF(cid):
         '''select filename from syllabi where cid = %s''',
         [cid])
     row = curs.fetchone()
-    if row['filename'] == '' or row == None:
-        return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
-    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+    if row != None:
+        return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
+   
+    
 
 
 @app.route('/pic/<bNum>')
