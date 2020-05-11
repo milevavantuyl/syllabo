@@ -141,7 +141,11 @@ def showCourse(cid):
                 return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
             except Exception as err:
-                flash(err) 
+                avgRatings = functions.getAvgRatings(cid)
+                comments = functions.getComments(cid)
+                flash('Please log in to favorite a course!') 
+                return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
         elif action == 'Rate':
             print('trying to rate/comment')
             #user is rating (which includes commenting) the course.
@@ -171,9 +175,6 @@ def getPDF(cid):
         return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
     return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
    
-    
-
-
 @app.route('/pic/<bNum>')
 def getPic(bNum):
     conn = dbi.connect()
