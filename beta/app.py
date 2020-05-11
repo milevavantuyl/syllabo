@@ -141,7 +141,6 @@ def showCourse(cid):
                 return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
             except Exception as err:
-                print(err)
                 flash(err) 
         elif action == 'Rate':
             print('trying to rate/comment')
@@ -299,8 +298,13 @@ def profile(name):
         studentDict['major'] = student[2]
         favorites = functions.getFavorites(bNum)
         comments = functions.getStudentComments(bNum)
-        return render_template('profile_page.html', 
-                student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+        try:
+            return render_template('profile_page.html', 
+                    student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+        except Exception as err:
+            print(err)
+            flash("Please log in to view profiles!")
+            return redirect(url_for('login'))
     elif request.method == 'POST':
         newMajor = request.form.get('major')
         functions.updateMajor(newMajor, bNum)

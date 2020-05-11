@@ -1,0 +1,1666 @@
+====================== app.py =====================
+"Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl"
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
+from werkzeug.utils import secure_filename
+import os
+import cs304dbi as dbi
+import functions
+
+UPLOAD_FOLDER = 'upload_folder'
+ALLOWED_EXTENSIONS = {'pdf'}
+PORTRAIT_FOLDER = 'upload_folder'
+
+app = Flask(__name__)
+
+from flask_cas import CAS
+
+CAS(app)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PORTRAIT_FOLDER'] = PORTRAIT_FOLDER
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+
+import random
+
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'logged_in'
+# Doesn't redirect properly, but not a problem to fix--it is okay:
+app.config['CAS_AFTER_LOGOUT'] = 'after_logout'
+
+@app.route('/')
+def index():
+    return render_template('home.html', courses = functions.getRecommended())
+
+@app.route('/create/', methods=['GET','POST'])
+def createCourse():
+    if request.method == 'GET':
+        return render_template('create_course.html')
+    else:
+        values = request.form
+        courseInfo = functions.insertCourse(list(values.values()))
+        cid = functions.getCID(courseInfo)
+        flash('Your updates have been made!')
+        return redirect(url_for('uploadSyllabus', n = cid))
+
+@app.route('/upload/<int:n>', methods=['GET','POST'])
+def uploadSyllabus(n):
+    if request.method == 'GET':
+        return render_template('syl_upload.html')
+    else:
+        if 'file' not in request.files:
+            flash('No file part')
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+        if file and functions.allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        functions.saveToDB(n, file.filename)
+        return render_template('home.html', courses = functions.getRecommended())
+
+@app.route('/explore/', methods = ['GET'])
+def explore(): 
+    conn = dbi.connect()
+    allCourses = functions.getAllCourses(conn)
+    return render_template('explore.html', 
+                courses = allCourses, query = None)
+    
+@app.route('/search/', methods = ['GET']) 
+def search(): 
+    conn = dbi.connect()
+
+    search = request.args.get('search')
+    kind = request.args.get('type') 
+
+    # Check kind type is valid
+    if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
+        if (kind == "prof"):
+            courseResultsByProf = functions.getCoursesByProf(conn, search)
+        else: 
+            courseResults = functions.getCourses(conn, search, kind)
+        numSections = functions.numSections(conn, search, kind)
+
+        # No results: redirect user to create a new course
+        if numSections == 0:
+            flash ('No results for {} in the database.'.format(search))
+            return redirect(url_for('createCourse')) 
+
+        # One result: redirect user to specific course page
+        elif numSections == 1: 
+            cid = functions.getOneResult(conn, search, kind)
+            return redirect(url_for('showCourse', cid = cid))
+                
+        # Multiple results: display all the results
+        else: 
+
+            if (kind == "prof"):
+                return render_template('prof_search_results.html', 
+                profs=courseResultsByProf, query = search)
+            else: 
+                return render_template('search_results.html', 
+                courses = courseResults, query = search)
+        
+    # Invalid kind type
+    else: 
+        flash ('Invalid value entered for type field.')
+        return redirect(url_for('createCourse')) 
+
+@app.route('/course/<cid>', methods=['GET','POST'])
+def showCourse(cid):
+    basics = functions.getBasics(cid)
+    if request.method == 'GET':
+        avgRatings = functions.getAvgRatings(cid)
+        comments = functions.getComments(cid) 
+        return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
+    elif request.method == 'POST':
+        action = request.form.get("submit")
+        if action == 'Add to Favorites' :
+            try: 
+                bNum = functions.getBNum()
+                print(bNum)
+                functions.addFavorite(bNum, basics['cid'])
+                avgRatings = functions.getAvgRatings(cid)
+                comments = functions.getComments(cid)
+                flash('Course added to favorites')
+                return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
+            except Exception as err:
+                print(err)
+                flash(err) 
+        elif action == 'Rate':
+            print('trying to rate/comment')
+            #user is rating (which includes commenting) the course.
+            uR = request.form.get('usefulRate')
+            dR = request.form.get('diffRate')
+            rR = request.form.get('relevRate')
+            eR = request.form.get('expectRate')
+            hW = request.form.get('hoursWk')
+            comment = request.form.get('new_comment')
+            functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) 
+            #have to recalculate the ratings and fetch the comments again
+            avgRatings = functions.getAvgRatings(cid)
+            comments = functions.getComments(cid)
+            #now we render the page again
+            return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                    comments=comments)
+
+@app.route('/pdf/<cid>')
+def getPDF(cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute(
+        '''select filename from syllabi where cid = %s''',
+        [cid])
+    row = curs.fetchone()
+    if row['filename'] == '' or row == None:
+        return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
+    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+
+
+@app.route('/pic/<bNum>')
+def getPic(bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute(
+        '''select filename from portrait where bNum = %s''',
+        [bNum])
+    row = curs.fetchone()
+    if row['filename'] == '' or row == None:
+        return send_from_directory(app.config['UPLOAD_FOLDER'],'NoPropic.png')
+    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+
+@app.route('/course/<cid>/update', methods=['GET','POST'])
+def update(cid):
+    basics = functions.getBasics(cid)
+    if request.method == 'GET':
+        return render_template('update_course.html', basics = basics)
+    elif request.method == 'POST':
+        updateValues = request.form.to_dict()
+        #updateCourse is a nonfruitful function, takes in the form data and the cid
+        functions.updateCourse(updateValues, cid)
+        flash('Successfully updated course!')
+        return redirect(url_for('updateSyllabus', cid = cid))
+
+'''Just a separate route from the original upload syllabus because the HTML and messaging is slightly diff'''
+@app.route('/updatesyllabus/<int:cid>', methods=['GET','POST'])
+def updateSyllabus(cid):
+    #uses same functions as upload syllabus...not updating the course table
+    if request.method == 'GET':
+        return render_template('update_syl.html')
+    else:
+        if 'file' not in request.files:
+            flash('No file part')
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+        if file and functions.allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        functions.saveToDB(cid, file.filename)
+        #bring them back to the updated course page
+        return redirect(url_for('showCourse', cid = cid))
+
+'''Functions below have to do with logging in, creating a profile, seeing your profile,
+and logging out.'''
+
+@app.route('/loginPage/', methods=['GET'])
+def login():
+    if '_CAS_TOKEN' in session:
+        token = session['_CAS_TOKEN']
+    if 'CAS_USERNAME' in session:
+        is_logged_in = True
+        username = session['CAS_USERNAME']
+    else:
+        is_logged_in = False
+        username = None
+    if is_logged_in: # only occurs for first time login
+        conn = dbi.connect()
+        bNum = functions.getBNum()
+        student = functions.getStudent(bNum)
+        name = student[1]
+        return redirect( url_for('profile', name = name) )
+    else: 
+        return render_template('login.html',
+                           username=username,
+                           is_logged_in=is_logged_in,
+                           cas_attributes = session.get('CAS_ATTRIBUTES'))
+
+# Log in CAS stuff:
+@app.route('/logged_in/')
+def logged_in():
+    conn = dbi.connect()
+    bNum = functions.getBNum()
+    alreadyAMember = functions.checkUser(conn, bNum)
+    # if profile already made, redirect to profile
+    if(alreadyAMember):
+        student = functions.getStudent(bNum)
+        name = student[1]
+        return redirect( url_for('profile', name = name) )
+    else: # if not, create profile
+        return redirect( url_for('createProfile') )
+
+@app.route('/createProfile/', methods=['GET','POST'])
+def createProfile():
+    if request.method == 'GET':
+        return render_template('create_profile.html')
+    else:
+        values = request.form
+        bNum = functions.getBNum()
+        student_attributes = list(values.values())
+        student_attributes.insert(0,bNum)
+        studentInfo = functions.insertStudent(student_attributes)
+        return redirect(url_for('uploadPic', n = bNum))
+
+@app.route('/uploadPic/', methods=["GET", "POST"])
+def uploadPic():
+    if request.method == 'GET':
+        return render_template('portrait_upload.html')
+    else:
+        if 'file' not in request.files:
+            flash('No file part')
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+        if file and functions.allowed_picture_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['PORTRAIT_FOLDER'], filename))
+        bNum = functions.getBNum()
+        student = functions.getStudent(bNum)
+        name = student[1]
+        functions.insertPicture(bNum, file.filename)
+        return redirect(url_for('profile', name = name))
+
+@app.route('/profile/<name>', methods =['GET', 'POST'])
+def profile(name):
+    student = functions.getStudentFromName(name)
+    studentDict = {'bNum': student[0], 'name': student[1], 'email': student[3]}
+    bNum = studentDict['bNum']
+    if request.method == 'GET':
+        studentDict['major'] = student[2]
+        favorites = functions.getFavorites(bNum)
+        comments = functions.getStudentComments(bNum)
+        return render_template('profile_page.html', 
+                student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+    elif request.method == 'POST':
+        newMajor = request.form.get('major')
+        functions.updateMajor(newMajor, bNum)
+        student = functions.getStudentFromName(name)
+        studentDict['major'] = student[2]
+        favorites = functions.getFavorites(bNum)
+        comments = functions.getStudentComments(bNum)
+        print(student)
+        return render_template('profile_page.html', 
+                student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+
+
+@app.route('/after_logout/')
+def after_logout():
+    flash('successfully logged out!')
+    return redirect( url_for('login') )
+
+application = app
+
+if __name__ == '__main__':
+    import sys, os
+    if len(sys.argv) > 1:
+        port=int(sys.argv[1])
+        if not(1943 <= port <= 1950):
+            print('For CAS, choose a port from 1943 to 1950')
+            sys.exit()
+    else:
+        port=os.getuid()
+    # the following database code works for both PyMySQL and SQLite3
+    dbi.cache_cnf()
+    dbi.use('syllabo_db')
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    # the following query works for both MySQL and SQLite
+    curs.execute('select current_timestamp as ct')
+    row = curs.fetchone()
+    ct = row['ct']
+    print('connected to Syllabo DB at {}'.format(ct))
+    app.debug = True
+    app.run('0.0.0.0',port)
+
+====================== functions.py =====================
+'''Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl
+pymysql functions for Syllabo'''
+
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
+from werkzeug.utils import secure_filename
+import cs304dbi as dbi
+import os
+
+UPLOAD_FOLDER = 'upload_folder'
+ALLOWED_EXTENSIONS = {'pdf'}
+
+PICTURE_EXTENSTIONS = {'jpg', 'png', 'jpeg'}
+
+app = Flask(__name__)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Sarah's functions:
+'''getBasics() returns a dictionary of course information 
+    from the course table in syllabo_db given the cid (UNIQUE course id)
+    this information is used to populate the course page'''
+def getBasics(cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT title, dep, cnum, crn, web, yr, sem, prof, cid
+            FROM course
+            WHERE cid = (%s)''', [cid])
+    basicsDict = curs.fetchone()
+    conn.commit()
+    return basicsDict
+
+'''getAvgRatings() returns a dictionary of average course ratings information 
+    by aggregating info from the rates table in syllabo_db given the cid.
+    These averages are used to populate the course page'''
+def getAvgRatings(cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT AVG(relevRate) AS rel, AVG(usefulRate) AS useful, AVG(diffRate) AS diff, AVG(expectRate) AS exp, AVG(hoursWk) AS hrsWk
+            FROM rates
+            WHERE cid = (%s)''', [cid])
+    avgRatingsDict = curs.fetchone()
+    conn.commit()
+    return avgRatingsDict
+
+'''getComments() returns a dictionary of all of the comments for a course
+    given the cid. This information will be displayed on the course page.'''
+def getComments(cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT name, comment  
+            FROM rates INNER JOIN student USING(bNum)
+            WHERE cid = (%s)''', [cid])
+    commentsDict = curs.fetchall()
+    conn.commit()
+    return commentsDict
+
+'''makeRatings() (returns None) inserts a new row into the rates table of syllabo_db. 
+    The cid will be supplied by the page, the bNum by the session login info,
+    and all other columns from the rating form submitted by the user
+    found on the course page.'''
+def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment):
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        query = curs.execute('''
+                INSERT INTO rates(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', 
+                [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
+        conn.commit()
+
+'''adds a course to a students "favorites"'''
+def addFavorite(bNum, cid):
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        query = curs.execute('''
+                INSERT INTO favorites(bNum, cid)
+                VALUES (%s, %s)''', 
+                [bNum, cid])
+        conn.commit()
+
+'''updateCourse() allows the user to update any information about the course'''
+def updateCourse(updates, cid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            UPDATE course 
+            SET title = (%s), dep = (%s), cnum = (%s), crn = (%s), 
+            web = (%s), yr = (%s), sem = (%s), prof = (%s) 
+            WHERE cid = (%s)''', 
+            [updates['course-title'], updates['course-dept'], updates['course-num'], 
+                updates['course-crn'], updates['course-website'], updates['course-year'],
+                updates['course-sem'], updates['course-prof'], cid])
+    conn.commit()
+
+'''getFavorites returns the cid and course name for all favorite courses of a given bNum'''
+def getFavorites(bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT cid, title  
+            FROM favorites INNER JOIN course USING(cid)
+            WHERE bNum = (%s)''', [bNum])
+    favoritesDict = curs.fetchall()
+    conn.commit()
+    return favoritesDict
+    
+
+'''getStudentComments() returns a dictionary of all of the comments a certain student has made
+given the bNum. This information will be displayed on their profile.'''
+def getStudentComments(bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            SELECT title, comment  
+            FROM rates INNER JOIN course USING(cid)
+            WHERE bNum = (%s)''', [bNum])
+    commentsDict = curs.fetchall()
+    conn.commit()
+    return commentsDict
+
+def updateMajor(major, bNum):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    query = curs.execute('''
+            UPDATE student  
+            SET major = (%s)
+            WHERE bNum = (%s)''', [major, bNum])
+    commentsDict = curs.fetchall()
+    conn.commit()
+    
+# Emily's functions for login and creating profile:
+
+'''Input: User bnum,
+Output: true if bnum is in database, false otherwise'''
+def checkUser(conn, bNumber):
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT bNum 
+            FROM student 
+            WHERE bNum = (%s)
+        ''', [bNumber])
+    bNumInDB = curs.fetchone()
+    # Checks if there is no Bnum that matches in database
+    return bNumInDB != None 
+
+'''Takes all student info as a parameter and uses it to insert the student into the database'''
+def insertStudent(val):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+    INSERT into student(bNum, name, major, email)
+    VALUES(%s, %s, %s, %s)''', 
+    val)
+    conn.commit()
+
+'''Function to get the bnumber of the logged in student. Prerequisite is that the student is currently logged in'''
+def getBNum():
+    if 'CAS_ATTRIBUTES' in session:
+        attribs = session['CAS_ATTRIBUTES']
+        return attribs.get('cas:id')
+
+'''Helper function for uploadPortrait that checks if the file is a picture using filename input'''
+def allowed_picture_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in PICTURE_EXTENSTIONS
+
+'''Helper function for uploadPortrait that puts the filename in the database in the portrait table
+INPUT: '''
+def insertPicture(bNum, pic_file):
+    try:
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        curs.execute('''
+                INSERT into portrait(bNum, filename) VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE filename = %s''', [bNum, pic_file, pic_file])
+        conn.commit()
+        flash('Upload successful')
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
+
+#sarah's function, for profile page
+'''returns all information about the student given the bNum'''
+def getStudent(bNum):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+            SELECT *
+            FROM student 
+            WHERE bNum = %s''', [bNum])
+    conn.commit()
+    student = curs.fetchone()
+    return student
+
+'''returns all information about the student given the bNum'''
+def getStudentFromName(name):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+            SELECT bNum, name, major, email
+            FROM student 
+            WHERE name = %s''', [name])
+    conn.commit()
+    student = curs.fetchone()
+    return student
+
+# Mileva's functions:
+
+''' Input: User search query and kind of query, 
+Output: All courses and sections fitting the query'''
+def getCourses(conn, query, kind):
+
+    curs = dbi.dict_cursor(conn)
+    if (kind == "title" or kind == "dep" or kind == "cnum"):
+        curs.execute('''SELECT distinct cnum, title
+                        FROM course
+                        WHERE {} like %s
+                        ORDER BY cnum ASC, title ASC'''.format(kind), 
+                        [query + '%']) 
+        courses = curs.fetchall()
+
+        # Finds all sections associated with each distinct course
+        for course in courses: 
+            course['sections'] = getSections(conn, course['cnum'], course['title'])
+            course['ratings'] = getCourseRatings(conn, course)
+
+        return courses 
+
+''' Gets all courses, sections, and ratings in the databases and sorts by 
+cnum and title of the course'''
+def getAllCourses(conn): 
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT distinct cnum, title
+                    FROM course
+                    ORDER BY cnum ASC, title ASC''')
+    courses = curs.fetchall()
+
+    # Finds all sections associated with each distinct course
+    for course in courses: 
+        course['sections'] = getSections(conn, course['cnum'], course['title'])
+        course['ratings'] = getCourseRatings(conn, course)
+
+    return courses 
+
+''' Input: User search query by prof. Output: All courses and sections by matching profs'''
+def getCoursesByProf(conn, query): 
+
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT distinct prof 
+                    FROM course
+                    WHERE prof like %s
+                    ORDER BY prof ASC''', [query + '%'])
+    profs = curs.fetchall()
+
+    for prof in profs: 
+        prof['sections'] = getSectionsByProf(conn, prof['prof'])
+    
+    return profs
+
+'''Input: prof name. Output: List of dictionaries containing info about course 
+sections in sorted order. With the limited data being collected about each prof, 
+sections taught by different profs with the same name will be returned together.'''
+def getSectionsByProf(conn, prof):
+
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, yr, sem, cid 
+                    FROM course 
+                    WHERE prof = %s 
+                    ORDER BY cnum ASC, yr desc''', [prof])
+    sections = curs.fetchall()
+    return sections
+
+'''Input: course cnum and title. Output: list of dictionaries containing all
+the information about each course section in sorted order'''
+def getSections(conn, cnum, title): 
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT cnum, title, sem, yr, prof, cid
+                    FROM course 
+                    WHERE cnum = %s and title = %s
+                    ORDER BY yr DESC''', [cnum, title])
+    sections = curs.fetchall()
+    return sections
+
+'''Input course dictionary containing a title and cnum. Outputs: A dictionary 
+of the average ratings across all sections of that course.'''
+def getCourseRatings(conn, course):
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT avg(relevRate) as relev, 
+                            avg(usefulRate) as useful, 
+                            avg(diffRate) as diff, 
+                            avg(expectRate) as expect, 
+                            avg(hoursWk) as hoursWk
+                    FROM rates INNER JOIN course USING (cid)
+                    WHERE cnum = %s and title = %s''', 
+                    [course['cnum'], course['title']])
+    courseRatings = curs.fetchone()
+    return courseRatings
+
+'''Input: user query and kind. Output: number of sections fitting that query'''
+def numSections(conn, query, kind):
+    curs = dbi.cursor(conn)
+    if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
+        curs.execute('''SELECT count(*) 
+                        FROM course
+                        WHERE {} like %s'''.format(kind), [query + '%'])
+        num = curs.fetchone()
+        return num[0]
+
+'''Input: user query and kind (for a search result that 
+returns exactly one course). Output: cid of unique section fitting that query'''
+def getOneResult(conn, query, kind):
+    curs = dbi.dict_cursor(conn)
+    if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
+        curs.execute('''SELECT cid, cnum
+                        FROM course
+                        WHERE {} like %s'''.format(kind), [query + '%']
+                    ) 
+        section = curs.fetchone()
+        return section['cid']
+
+# Safiya's functions:
+'''Takes all course info as a parameter and uses it to insert the given course into the database'''
+def insertCourse(val):
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('''
+    INSERT into course(title, dep, cnum, crn, web, yr, sem, prof)
+    VALUES(%s, %s, %s, %s, %s, %s, %s, %s)''', 
+    val)
+    conn.commit()
+    return [val[0], val[5], val[6], val[7]]
+
+def getCID(val):
+    '''Gets the CID from the course that was just submitted to render the 
+       correct syl_upload form'''
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    select cid from course where title = %s and yr= %s and sem= %s 
+    and prof = %s''',
+    [val[0], val[1], val[2], val[3]])
+    result = curs.fetchone()
+    return result['cid']
+
+def getRecommended():
+    '''Gets recommended courses to display on the home page'''
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT course.cid, course.title 
+    FROM course LIMIT 3''')
+    results = curs.fetchall()
+    return results
+
+'''Helper function for uploadSyllabus that checks if the file is a pdf'''
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+'''Helper function for uploadSyllabus that puts the file name in the database'''
+def saveToDB(x, aFile):
+    try:
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        curs.execute('''
+                INSERT into syllabi(cid, filename) VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE filename = %s''', [x, aFile, aFile])
+        conn.commit()
+        flash('Upload successful')
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
+
+
+if __name__ == '__main__':
+   dbi.cache_cnf()   # defaults to ~/.my.cnf
+   dbi.use('syllabo_db')
+   conn = dbi.connect()
+
+
+====================== routing.py.scott =====================
+import flask
+from xmltodict import parse
+from flask import current_app
+from .cas_urls import create_cas_login_url
+from .cas_urls import create_cas_logout_url
+from .cas_urls import create_cas_validate_url
+
+
+try:
+    from urllib import urlopen
+except ImportError:
+    from urllib.request import urlopen
+
+blueprint = flask.Blueprint('cas', __name__)
+
+
+@blueprint.route('/login/')
+def login():
+    """
+    This route has two purposes. First, it is used by the user
+    to login. Second, it is used by the CAS to respond with the
+    `ticket` after the user logs in successfully.
+
+    When the user accesses this url, they are redirected to the CAS
+    to login. If the login was successful, the CAS will respond to this
+    route with the ticket in the url. The ticket is then validated.
+    If validation was successful the logged in username is saved in
+    the user's session under the key `CAS_USERNAME_SESSION_KEY` and
+    the user's attributes are saved under the key
+    'CAS_USERNAME_ATTRIBUTE_KEY'
+    """
+
+    cas_token_session_key = current_app.config['CAS_TOKEN_SESSION_KEY']
+
+    redirect_url = create_cas_login_url(
+        current_app.config['CAS_SERVER'],
+        current_app.config['CAS_LOGIN_ROUTE'],
+        flask.url_for('.login', _external=True))
+
+    if 'ticket' in flask.request.args:
+        flask.session[cas_token_session_key] = flask.request.args['ticket']
+
+    if cas_token_session_key in flask.session:
+
+        if validate(flask.session[cas_token_session_key]):
+            if 'CAS_AFTER_LOGIN_SESSION_URL' in flask.session:
+                redirect_url = flask.session.pop('CAS_AFTER_LOGIN_SESSION_URL')
+            else:
+                redirect_url = flask.url_for(
+                    current_app.config['CAS_AFTER_LOGIN'])
+        else:
+            del flask.session[cas_token_session_key]
+
+    current_app.logger.debug('Redirecting to: {0}'.format(redirect_url))
+
+    return flask.redirect(redirect_url)
+
+
+@blueprint.route('/logout/')
+def logout():
+    """
+    When the user accesses this route they are logged out.
+    """
+
+    cas_username_session_key = current_app.config['CAS_USERNAME_SESSION_KEY']
+    cas_attributes_session_key = current_app.config['CAS_ATTRIBUTES_SESSION_KEY']
+
+    if cas_username_session_key in flask.session:
+        del flask.session[cas_username_session_key]
+
+    if cas_attributes_session_key in flask.session:
+        del flask.session[cas_attributes_session_key]
+
+    if(current_app.config['CAS_AFTER_LOGOUT'] != None):
+        redirect_url = create_cas_logout_url(
+            current_app.config['CAS_SERVER'],
+            current_app.config['CAS_LOGOUT_ROUTE'],
+            current_app.config['CAS_AFTER_LOGOUT'])
+    else:
+        redirect_url = create_cas_logout_url(
+            current_app.config['CAS_SERVER'],
+            current_app.config['CAS_LOGOUT_ROUTE'])
+
+    current_app.logger.debug('Redirecting to: {0}'.format(redirect_url))
+    return flask.redirect(redirect_url)
+
+
+def validate(ticket):
+    """
+    Will attempt to validate the ticket. If validation fails, then False
+    is returned. If validation is successful, then True is returned
+    and the validated username is saved in the session under the
+    key `CAS_USERNAME_SESSION_KEY` while tha validated attributes dictionary
+    is saved under the key 'CAS_ATTRIBUTES_SESSION_KEY'.
+    """
+
+    cas_username_session_key = current_app.config['CAS_USERNAME_SESSION_KEY']
+    cas_attributes_session_key = current_app.config['CAS_ATTRIBUTES_SESSION_KEY']
+
+    current_app.logger.debug("validating token {0}".format(ticket))
+
+    cas_validate_url = create_cas_validate_url(
+        current_app.config['CAS_SERVER'],
+        current_app.config['CAS_VALIDATE_ROUTE'],
+        flask.url_for('.login', _external=True),
+        ticket)
+
+    current_app.logger.debug("Making GET request to {0}".format(
+        cas_validate_url))
+
+    xml_from_dict = {}
+    isValid = False
+
+    try:
+        xmldump = urlopen(cas_validate_url).read().strip().decode('utf8', 'ignore')
+        xml_from_dict = parse(xmldump)
+        isValid = True if "cas:authenticationSuccess" in xml_from_dict["cas:serviceResponse"] else False
+    except ValueError:
+        current_app.logger.error("CAS returned unexpected result")
+
+    if isValid:
+        current_app.logger.debug("valid")
+        xml_from_dict = xml_from_dict["cas:serviceResponse"]["cas:authenticationSuccess"]
+        username = xml_from_dict["cas:user"]
+        attributes = xml_from_dict["cas:attributes"]
+
+        if "cas:memberOf" in attributes:
+            # print 'scott: typeof(attributes[cas:memberOf"])',attributes["cas:memberOf"],type(attributes["cas:memberOf"])
+            # inserted by Scott D. Anderson Feb 6, 2017, because cas:memberOf was already a list
+	    # and the original code caused a runtime error:
+	    # AttributeError: 'list' object has no attribute '\lstrip'
+            type_attr = type(attributes["cas:memberOf"])
+            if type_attr is str:
+                current_app.logger.debug("Scott: coercing cas:memberOf to list")
+                try:
+                    # this is the original code
+                    attributes["cas:memberOf"] = attributes["cas:memberOf"].lstrip('[').rstrip(']').split(',')
+                except:
+                    current_app.logger.debug("failed to coerce cas:memberOf to list")
+                    raise
+            for group_number in range(0, len(attributes['cas:memberOf'])):
+                attributes['cas:memberOf'][group_number] = attributes['cas:memberOf'][group_number].lstrip(' ').rstrip(' ')
+
+        flask.session[cas_username_session_key] = username
+        flask.session[cas_attributes_session_key] = attributes
+    else:
+        current_app.logger.debug("invalid")
+
+    return isValid
+
+====================== static/style.css =====================
+/* For flashed messages; make them stand out using red and italics */
+
+* {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+#messages {
+    color: red;
+    font-style: italic;
+}
+
+#welcome, #reccomended, #create_course_table {
+    width: 80%;
+    border: 15px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+
+#student-comments, #favorites {
+    width: 80%;
+    border: 5px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+#student-comments tr:nth-child(even) #favorites tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+#student-comments th, #favorites th {
+    font-weight: bold;
+}
+
+#rate{
+    width: 40%;
+    border: 15px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 25px;
+    margin: 20px;
+}
+
+th {
+    text-align: center;
+}
+
+ul.a {
+    list-style-type: square;
+}
+
+h1 {
+    position: relative;
+    left: 40%;
+    font-size: 250%;
+    color: rgb(20, 18, 150);
+}
+
+h2 {
+    position: relative;
+    text-align: center;
+    font-size: 150%;
+    color: rgb(7, 103, 158);
+}
+
+h3, th {
+    text-align: center;
+    font-size: 100%;
+    color: rgb(7, 103, 158);
+}
+
+h4 {
+    font-size: 115%;
+}
+
+#search_bar {
+    color: white;
+    float: right;
+    margin: 0px 14px;
+}
+
+#nav_bar{
+    list-style-type: none;
+    margin: 0px; 
+    padding: 0px;
+    overflow: hidden;
+    background-color: rgb(20, 18, 150);
+    /* position: fixed; */
+}
+
+#nav_bar li {
+    float: left;
+}
+
+#nav_bar li a {
+    display: inline-block; 
+    color: white;
+    text-align: center;
+    padding: 17px 20px;
+    text-decoration: none;
+} 
+
+#nav_bar li a:hover{
+    background-color:rgb(188, 207, 255);
+    color: black;
+}
+
+.result {
+    border: 10px;
+    border-style: solid;
+    border-color: rgb(188, 207, 255);
+    padding: 15px;
+    margin: 10px;
+}
+
+.result ul {
+    list-style-type: square;
+}
+
+#query_string {
+    text-align: center;
+    font-weight: bold; 
+    color: rgb(20, 18, 150);
+    font-size: 125%;
+}
+
+.course {
+    border: 0.5px; 
+    border-style: solid; 
+    border-color: rgb(184, 204, 253);
+    padding: 5px;
+    margin: 10px;
+}
+
+.course ul {
+    list-style-type: square;
+}
+
+.accordion {
+    background-color: rgb(215, 227, 255);
+    color: black; 
+    cursor: pointer; 
+    padding: 15px; 
+    width: 100%;
+    text-align: left; 
+    outline: none;
+    font-size: 20px; 
+    transition: 0.4s; 
+}
+
+.active, .accordion:hover {
+    background-color: rgb(184, 204, 253);
+}
+
+.panel {
+    padding: 15px;
+    display: none;
+    background-color: white;
+    overflow: hidden; 
+    border: 10px; 
+    border-color: black;
+}
+
+
+/* Create three equal columns that floats next to each other */
+.column {
+    float: left;
+    width: 40%;
+    padding: 15px;
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  
+  /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+  @media screen and (max-width:600px) {
+    .column {
+      width: 100%;
+    }
+  }
+
+====================== templates/base.html =====================
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Emily Mattlin, Sarah Pardo, Safiya Sirota, Mileva Van Tuyl">
+    <meta name=description content="Syllabo Wellesley Syllabus Database">
+    <title> {{title}} </title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='/style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+{% block nav_bar %}
+<ul id="nav_bar">
+    <li><a href= "{{url_for('index')}}">Syllabo</a></li>
+    <li><a href= "{{url_for('createCourse')}}">Create a Course</a></li>
+    <li><a href= "{{url_for('explore')}}">Explore Courses</a></li>
+    <li><a href= "{{url_for('login')}}">Profile</a></li>
+
+{% endblock %}
+
+{% block search_bar %}
+<form method="GET" action="{{url_for('search')}}" id="search_bar">
+    <p><label>Search: <input type="text" name="search" required></label>
+        <label>Search by: 
+            <select name="type">
+                <option value="title">Course Title</option>
+                <option value="cnum">Course Number</option>
+                <option value="dep">Course Department</option> 
+                <option value="prof">Course Professor</option>
+            </select>
+        </label>
+        <input type="submit" value="search"></p>
+</form>
+</ul>
+{% endblock %}
+
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+
+</body>
+</html>
+
+====================== templates/course_page.html =====================
+{% extends "base.html" %}
+
+{% block head_stuff%}
+<title>Course Page</title>
+{% endblock %}
+
+
+{% block main_content %}
+
+<div class = "row">
+  <div class = "column">
+    <h2>{{basics.title}}</h2>
+    <h2>{{basics.cnum}}</h2>
+  
+    <table id="basics">
+        <tr>
+            <td>Department</td>
+            <td>{{basics.dep}}</td>
+        </tr>
+        <tr>
+            <td>Professor</td>
+            <td>{{basics.prof}}</td>
+        </tr>
+        <tr>
+          <td>Semester</td>
+          <td>{{basics.sem}}</td>
+        </tr>
+        <tr>
+          <td>Year</td>
+          <td>{{basics.yr}}</td>
+        </tr>
+        <tr>
+          <td>CRN</td>
+          <td>{{basics.crn}}</td>
+        </tr>
+      </table>
+      
+      <p>Missing or outdated information? <a href="{{ url_for('update', cid = basics.cid) }}">Update this course!</a></p>
+      
+      {% if basics.web %}
+        <h3>Course Website</h3>             
+        <iframe src={{basics.web}} width="80%" height="400px">
+        </iframe>  
+      {% else %}
+        <h4>No course website yet! </h4>
+      {% endif %}
+
+      <h3>Course Syllabus</h3>    
+      <iframe src="{{url_for('getPDF',cid=basics.cid)}}" width= "100%" height= "700px">
+      </iframe>
+
+      <table id="ratings">
+        <tr>
+          <th>Ratings</th>
+        </tr> 
+      </tr> 
+        <tr>
+            <td>Usefulness for major</td>
+            <td>{{avgRatings.useful}}</td>
+        </tr>
+        <tr>
+            <td>Difficulty</td>
+            <td>{{avgRatings.diff}}</td>
+        </tr>
+        <tr>
+          <td>Relevance of course assignments</td>
+          <td>{{avgRatings.rel}}</td>
+        </tr>
+        <tr>
+          <td>Expectations were clearly defined</td>
+          <td>{{avgRatings.exp}}</td>
+        </tr>
+        <tr>
+          <td>How time consuming</td>
+          <td>{{avgRatings.hrsWk}}</td>
+        </tr>
+    </table>    
+
+      <p>How did other students find this course?</p>
+      
+      <table id="comments" style="width:100%">
+      {% for comment in comments %}
+          <tr>
+            <td><a href="{{ url_for('profile', name = comment.name) }}">{{comment.name}}</a></td>
+            <td>{{comment.comment}}</td>
+        </tr>
+    	{% endfor %}
+    </table> 
+  </div>
+    <div class = "column" id = "rate">
+    
+    <h3>How would you rate this course?</h3>
+
+    <form method=POST action="">
+      
+      <label for="usefulRate"><p> On a scale from 1-5, 1 being useless and 5 being 
+        most useful, how useful do you find {{basics.cnum}} is for the {{basics.dep}} major?</p></label>
+      <select id="usefulRate" name = "usefulRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      
+      <label for="diffRate"><p> On a scale from 1-5, 1 being very easy and 5 being
+        very challenging, how difficult did you find the material for {{basics.cnum}}?</p></label>
+      <select id="diffRate" name = "diffRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="relevRate"><p> On a scale from 1-5, 1 being irrelevant and 5 being 
+        most relevant, how relevant did you find the course assignments for {{basics.cnum}}?</p></label>
+      <select id="relevRate" name = "relevRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="expectRate"><p> On a scale from 1-5, 1 being extremely vague and 5 being crystal clear, how clear did you find Professor {{basics.prof}}'s expectations of students for {{basics.cnum}}?</p></label>
+      <select id="expectRate" name = "expectRate">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <label for="hoursWk"><p> On a scale from 1-5, 1 being hardly requiring any time at all
+         and 5 being your most time consuming course ever, how demanding of your time did you find {{basics.cnum}}?</p></label> 
+      <select id="hoursWk" name = "hoursWk">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+        
+      
+      <label for="new_comment"><p>Is there anything you'd like to share about {{basics.cnum}}: {{basics.title}}?</p></label>
+              <p><textarea id="new_comment"
+                          name="new_comment"
+                          rows="6" cols="40"></textarea></p>
+      <input type="submit" name="submit" value="Rate">
+      <input type="submit" name="submit" value="Add to Favorites">
+    </form>
+    
+  </div>
+  </div>
+     
+    {% endblock %}
+====================== templates/create_course.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Create a Course!</h1>
+
+<form method="POST" action="/create/">
+
+    <fieldset>
+    <legend>Course Info</legend>
+    <table id="create_course_table">
+    <tbody><tr><td><label for="course-title"> Course Title:</label></td>
+        <td><input type="text" name="course-title" value="" id="course-title" placeholder="e.g. Data Structures"> </td></tr>
+    <tr><td><label for="course-dept">Department:</label></td>
+        <td><input type="text" name="course-dept" value="" id="course-dept" placeholder="e.g. Computer Science"> </td></tr>
+    <tr><td><label for="course-num">Course Number:</label></td>
+        <td><input type="text" name="course-num" value="" id="course-num" placeholder="e.g. CS 230"></td></tr>
+    <tr><td><label for="course-crn">CRN:</label></td>
+        <td><input type="text" name="course-crn" value="" id="course-crn" placeholder="e.g. 12345"></td></tr>
+    <tr><td><label for="course-website">Website:</label></td>
+        <td><input type="text" name="course-website" value="" id="course-website" placeholder="paste a URL"></td></tr>
+        <tr><td><label for="course-year">Year:</label></td>
+            <td><select id="course-year" name="course-year">
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+                <option value="2017">2017</option>
+                </select></td></tr> 
+    <tr><td><label for="course-sem">Semester:</label></td>
+        <td><select id="course-sem" name="course-sem">
+            <option value="Fall">Fall</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Winter">Winter</option>
+          </select></td></tr>  
+    <tr><td><label for="course-prof">Professor:</label></td>
+    <td><input type="text" name="course-prof" value="" id="course-prof" placeholder="e.g. Takis Metaxas"></td></tr>
+    
+    </tbody></table>
+    </fieldset>
+
+    <p> <input type="submit" value="Insert Course"> </p>
+    
+</form>
+{% endblock %}
+====================== templates/create_profile.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Create a Profile!</h1>
+
+<form method="POST" action="/createProfile/">
+
+    <fieldset>
+    <legend>Profile Info</legend>
+    <table>
+    <tbody><tr><td><label for="student-name"> Name:</label></td>
+        <td><input type="text" name="student-name" value="" id="student-name" placeholder="e.g. Scott Anderson"> </td></tr>
+    <tr><td><label for="student-major">Major:</label></td>
+        <td><input type="text" name="student-major" value="" id="student-major" placeholder="e.g. Computer Science"> </td></tr>
+    <tr><td><label for="student-email">Email:</label></td>
+        <td><input type="text" name="student-email" value="" id="student-email" placeholder="e.g. wendy.well@wellesley.edu"></td></tr>
+    </tbody></table>
+    </fieldset>
+
+    <p> <input type="submit" value="Submit Profile"> </p>
+    
+</form>
+{% endblock %}
+====================== templates/explore.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1> Explore Courses </h1>
+
+{% for course in courses %}
+    <div class = "course">
+    <button class = "accordion"> {{course.cnum}}: {{course.title}} </button>
+        <div class = "panel">
+        
+        {% set rating = course.ratings %}
+        {% if not rating.relev and not rating.useful and not rating.diff and not rating.expect and not rating.hoursWk %}
+            <p> No ratings available for this course.</p>
+        
+            {% else %}
+            <table>
+                <tr>
+                    <td>Relevancy</td>
+                    <td>{{rating.relev if rating.relev != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Usefulness</td>
+                    <td>{{rating.useful if rating.useful != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Difficulty</td>
+                    <td>{{rating.diff if rating.diff != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Expectations</td>
+                    <td>{{rating.expect if rating.expect!= none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Amount of Work</td>
+                    <td>{{rating.hoursWk if rating.hoursWk != none else "No Rating" }}</td>
+                </tr>
+            </table>
+        {% endif %}
+
+        {% for section in course.sections %}
+            <ul> 
+                <li> <a href="{{ url_for('showCourse', cid = section.cid)}}">{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
+            </ul>
+        {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Javascript modified from W3schools Accordion Code
+    https://www.w3schools.com/howto/howto_js_accordion.asp -->
+    <script>
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++){
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.display == "block") {
+                    panel.style.display = "none";
+                } else {
+                    panel.style.display = "block";
+                }
+            });
+        }
+    </script>
+
+{% endblock %}
+====================== templates/home.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1 id ="title"> syllabo </h1>
+
+<div id = "welcome">
+<h2>Welcome!</h2>
+
+<p> syllabo is a space for Wellesley students to rave about their favorite courses,
+    find which ones to take next, and share course syllabi with their sibs. 
+    No more tracking down course inquiries on Facebook and commenting, "following!" 
+    to find out if it's a class worth taking.</p>
+
+</div>
+
+<div id = "reccomended">
+<h2>Folks on syllabo recommend:</h2>
+    <ul class = "a">
+        {% for course in courses %}
+        <li>
+            <a href="{{ url_for('showCourse', cid=course.cid) }}"> {{course.title}} </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+====================== templates/login.html =====================
+{% extends "base.html" %}
+
+{% block head_stuff%}
+<title>Welcome, log in!</title>
+{% endblock %}
+
+{% block main_content %}
+            
+{% if username %}
+   <form method="GET" action="{{url_for('cas.logout')}}"><button>logout {{username}}</button></form>
+   <form method="GET" action="{{url_for('profile')}}"></form>
+
+{% else %}
+   <form method="GET" action="{{url_for('cas.login')}}"><button>login</button></form>
+{% endif %}   
+
+{% endblock %}
+
+====================== templates/portrait_upload.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Now upload a Picture of yourself!</h1>
+
+<form action = "" method = "POST" 
+enctype = "multipart/form-data">
+<input type = "file" name = "file" />
+<input type = "submit" value = "Upload photo"/>
+</form>
+
+{% endblock %}
+    
+====================== templates/profile_page.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<title>{{student.name}}</title>
+<img src="{{url_for('getPic', bNum = student.bNum)}}" alt="Profile picture for {{student.name}}" style="height:300px;">
+
+<table id="info">
+    <tr>
+        <td>Email: {{student.email}}</td>
+    </tr>
+    <tr>
+        <td>Major: {{student.major}}</td>
+    </tr>
+</table>
+
+
+<table id="student-comments">
+        <tr>
+            <th>Comments {{student.name}} has made:</th>
+        </tr>
+        {% for comment in comments %}
+        <tr>
+            <td> <a href="{{url_for('showCourse', cid = comment.cid)}}">{{comment.title}}</a>
+            <td>{{comment.comment}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<table id="favorites">
+        <tr>
+            <th>{{student.name}}'s favorite courses:</th>
+        </tr>
+        {% for favorite in favorites %}
+        <tr>
+            <td> <a href="{{url_for('showCourse', cid = favorite.cid)}}">{{favorite.title}}</a></td>
+        </tr>
+        {% endfor %}
+</table> 
+
+{% if student.bNum == cas_attributes.get("cas:id") %}
+    <form method=POST action="">
+    <label for="major"><p>Update your major</p></label>
+              <p><textarea id="major"
+                          name="major"
+                          rows="1" cols="40"></textarea></p>
+      <input type="submit" name="major" value="Update">
+    </form>
+
+{% endif %}
+
+{% endblock %}
+
+====================== templates/prof_search_results.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1> Search Results</h1>
+<p id="query_string"> Query "{{query}}" by professor name</p>
+
+    {% for prof in profs %}
+    <div class="result">
+        <h4>{{prof.prof}}</h4>
+            {% for section in prof.sections %}
+                <ul> 
+                    <li> <a href="{{url_for('showCourse', cid = section.cid)}}">{{section.cnum}}: {{section.title}}, {{section.sem}} {{section.yr}}  </a></li>
+                </ul>
+            {% endfor %}
+    </div>
+    {% endfor %}
+{% endblock %}
+====================== templates/search_results.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1> Search Results</h1>
+<p id="query_string"> Query "{{query}}" by course details</p>
+
+    {% for course in courses %}
+    <div class="result">
+        <h4>{{course.cnum}}: {{course.title}}</h4>
+
+        {% set rating = course.ratings %}
+        {% if not rating.relev and not rating.useful and not rating.diff and not rating.expect and not rating.hoursWk %}
+            <p> No ratings available for this course.</p>
+        {% else %}
+            <table>
+                <tr>
+                    <td>Relevancy</td>
+                    <td>{{rating.relev if rating.relev != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Usefulness</td>
+                    <td>{{rating.useful if rating.useful != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Difficulty</td>
+                    <td>{{rating.diff if rating.diff != none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Expectations</td>
+                    <td>{{rating.expect if rating.expect!= none else "No Rating"}}</td>
+                </tr>
+                <tr>
+                    <td>Amount of Work</td>
+                    <td>{{rating.hoursWk if rating.hoursWk != none else "No Rating" }}</td>
+                </tr>
+            </table>
+        {% endif %}
+
+        {% for section in course.sections %}
+            <ul> 
+                <li> <a href="{{url_for('showCourse', cid = section.cid)}}">{{section.sem}} {{section.yr}}, {{section.prof}} </a></li>
+            </ul>
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% endblock %}
+====================== templates/syl_upload.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Now upload a Syllabus!</h1>
+
+<form action = "" method = "POST" 
+enctype = "multipart/form-data">
+<input type = "file" name = "file" />
+<input type = "submit" value = "Upload Syllabus"/>
+</form>
+
+{% endblock %}
+    
+====================== templates/update_course.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Update or add information for {{basics.title}}</h1>
+
+<form method="POST" action="">
+
+    <fieldset>
+    <legend>Course Info</legend>
+    <table>
+    <tbody><tr><td><label for="course-title"> Course Title:</label></td>
+        <td><input type="text" name="course-title" value="{{basics.title}}" id="course-title"></td></tr>
+    <tr><td><label for="course-dept">Department:</label></td>
+        <td><input type="text" name="course-dept" value="{{basics.dep}}" id="course-dept"></td></tr>
+    <tr><td><label for="course-num">Course Number:</label></td>
+        <td><input type="text" name="course-num" value="{{basics.cnum}}" id="course-num"></td></tr>
+    <tr><td><label for="course-crn">CRN:</label></td>
+        <td><input type="text" name="course-crn" value="{{basics.crn}}" id="course-crn"></td></tr>
+    <tr><td><label for="course-website">Website:</label></td>
+        <td><input type="text" name="course-website" value="{{basics.web}}" id="course-website"></td></tr>
+    <tr><td><label for="course-prof">Professor:</label></td>
+        <td><input type="text" name="course-prof" value="{{basics.prof}}" id="course-prof"></td></tr>
+    <tr><td><label for="course-sem">Semester:</label></td>
+        <td><select id="course-sem" name="course-sem">
+            <option value="Fall">Fall</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Winter">Winter</option>
+          </select></td></tr>  
+    <tr><td><label for="course-year">Year:</label></td>
+        <td><select id="course-year" name="course-year">
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+            <option value="2018">2018</option>
+            <option value="2017">2017</option>
+            </select></td></tr> 
+    </tbody></table>
+    </fieldset>
+
+    <p> <input type="submit" value="Update Course"> </p>
+    
+</form>
+{% endblock %}
+====================== templates/update_syl.html =====================
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Now add or update the Syllabus!</h1>
+
+<form action = "" method = "POST" 
+enctype = "multipart/form-data">
+<input type = "file" name = "file" />
+<p>If you have no syllabus to upload, click "Upload Syllabus" below to return to the course page.</p>
+<input type = "submit" value = "Upload Syllabus"/>
+</form>
+
+{% endblock %}
+    
