@@ -319,6 +319,19 @@ def getOneResult(conn, query, kind):
         return section['cid']
 
 # Safiya's functions:
+
+def isCourseNew(title, professor, semester, year):
+    '''Sees if a course with the same title, professor, semester, and year is already in the
+       databases'''
+    conn = dbi.connect()
+    curs = dbi.cursor(conn)
+    curs.execute('SELECT cid from course where title = %s and prof = %s and sem = %s and yr = %s',
+    [title, professor, semester, year])
+    row = curs.fetchone()
+    if row != None:
+        return False
+    return True
+
 def insertCourse(val):
     '''Takes all course info as a parameter and uses it to insert the given course into the database'''
     conn = dbi.connect()
@@ -331,17 +344,6 @@ def insertCourse(val):
     curs.execute('SELECT last_insert_id()')
     row = curs.fetchone()
     return row[0]
-
-def getCID(val):
-    '''Gets the CID from the course that was just submitted to render the 
-       correct syl_upload form'''
-    conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select cid from course where cid = %s''',
-    [val])
-    result = curs.fetchone()
-    return result['cid']
 
 def getRecommended():
     '''Gets recommended courses to display on the home page'''

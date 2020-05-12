@@ -51,10 +51,15 @@ def createCourse():
         return render_template('create_course.html')
     else:
         values = request.form
-        courseInfo = functions.insertCourse(list(values.values()))
-        cid = functions.getCID(courseInfo)
-        flash('Your updates have been made!')
-        return redirect(url_for('uploadSyllabus', n = cid))
+        isNew = functions.isCourseNew(values['course-title'], values['course-prof'], 
+                values['course-sem'], values['course-year'])
+        if isNew == True:
+            cid = functions.insertCourse(list(values.values()))
+            flash('Your updates have been made!')
+            return redirect(url_for('uploadSyllabus', n = cid))
+        else:
+            flash('This course already exists!')
+            return redirect(url_for('createCourse'))
 
 @app.route('/upload/<int:n>', methods=['GET','POST'])
 def uploadSyllabus(n):
