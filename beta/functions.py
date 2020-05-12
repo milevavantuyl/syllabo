@@ -119,6 +119,7 @@ def getStudentComments(bNum):
     return commentsDict
 
 def updateMajor(major, bNum):
+    '''Allows user to update their major field. None function'''
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''

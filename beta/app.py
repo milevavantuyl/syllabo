@@ -43,10 +43,12 @@ app.config['CAS_AFTER_LOGOUT'] = 'after_logout'
 
 @app.route('/')
 def index():
+    '''Sends user to the syllabo home page'''
     return render_template('home.html', courses = functions.getRecommended())
 
 @app.route('/create/', methods=['GET','POST'])
 def createCourse():
+    '''Sends user to the create course page. When they post the form, a new course is created'''
     if request.method == 'GET':
         if 'CAS_ATTRIBUTES' not in session:
             return redirect(url_for('login'))
@@ -66,6 +68,7 @@ def createCourse():
 
 @app.route('/upload/<int:n>', methods=['GET','POST'])
 def uploadSyllabus(n):
+    '''After creating a course, a student may upload a syllabus pdf to that course page'''
     if request.method == 'GET':
         return render_template('syl_upload.html')
     else:
@@ -82,6 +85,7 @@ def uploadSyllabus(n):
 
 @app.route('/explore/', methods = ['GET'])
 def explore(): 
+    '''Sends user to the explore page, which shows every course in the db'''
     conn = dbi.connect()
     allCourses = functions.getAllCourses(conn)
     return render_template('explore.html', 
@@ -89,6 +93,7 @@ def explore():
     
 @app.route('/search/', methods = ['GET']) 
 def search(): 
+    '''Allows user to search for courses by title, course number, department, or professor'''
     conn = dbi.connect()
     search = request.args.get('search')
     kind = request.args.get('type') 
@@ -128,6 +133,7 @@ def search():
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
+    '''directs the user an individual course page for unique semester, year, and prof'''
     conn = dbi.connect()
     basics = functions.getBasics(cid)
     if request.method == 'GET':
@@ -172,6 +178,7 @@ def showCourse(cid):
 
 @app.route('/pdf/<cid>')
 def getPDF(cid):
+    '''Displays the course syllabus PDF on the course page'''
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute(
@@ -185,6 +192,7 @@ def getPDF(cid):
    
 @app.route('/pic/<bNum>')
 def getPic(bNum):
+    '''displays the profile picture of a student on their profile page'''
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute(
@@ -198,6 +206,7 @@ def getPic(bNum):
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
 def update(cid):
+    '''prompts user to fill out an update form for outdated or missing course info'''
     basics = functions.getBasics(cid)
     if request.method == 'GET':
         if 'CAS_ATTRIBUTES' not in session:
@@ -213,6 +222,7 @@ def update(cid):
 '''Just a separate route from the original upload syllabus because the HTML and messaging is slightly diff'''
 @app.route('/updatesyllabus/<int:cid>', methods=['GET','POST'])
 def updateSyllabus(cid):
+    '''allows user to upload a new syllabus'''
     #uses same functions as upload syllabus...not updating the course table
     if request.method == 'GET':
         return render_template('update_syl.html')
@@ -234,6 +244,7 @@ and logging out.'''
 
 @app.route('/loginPage/', methods=['GET'])
 def login():
+    '''sends user to login using Wellesley Authentification'''
     if '_CAS_TOKEN' in session:
         token = session['_CAS_TOKEN']
     if 'CAS_USERNAME' in session:
@@ -257,6 +268,7 @@ def login():
 # Log in CAS stuff:
 @app.route('/logged_in/')
 def logged_in():
+    '''logs student in or sends them to create a profile if they don't have an account'''
     conn = dbi.connect()
     bNum = functions.getBNum()
     alreadyAMember = functions.checkUser(conn, bNum)
@@ -270,6 +282,7 @@ def logged_in():
 
 @app.route('/createProfile/', methods=['GET','POST'])
 def createProfile():
+    '''prompts user to fill out a form to create a profile'''
     if request.method == 'GET':
         return render_template('create_profile.html')
     else:
@@ -282,6 +295,7 @@ def createProfile():
 
 @app.route('/uploadPic/', methods=["GET", "POST"])
 def uploadPic():
+    '''prompts user to upload a profile picture for their account'''
     if request.method == 'GET':
         return render_template('portrait_upload.html')
     else:
@@ -303,6 +317,7 @@ def uploadPic():
 
 @app.route('/profile/<name>', methods =['GET', 'POST'])
 def profile(name):
+    '''displays the profile of a user. If it is their profile page they may update their picture or major'''
     student = functions.getStudentFromName(name)
     studentDict = {'bNum': student[0], 'name': student[1], 'email': student[3]}
     bNum = studentDict['bNum']
@@ -331,6 +346,7 @@ def profile(name):
 
 @app.route('/after_logout/')
 def after_logout():
+    '''logs out the user'''
     flash('successfully logged out!')
     return redirect( url_for('login') )
 
