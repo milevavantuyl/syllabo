@@ -211,15 +211,16 @@ def getCourses(conn, query, kind):
     ''' Input: User search query and kind of query, 
         Output: All courses and sections fitting the query'''
     curs = dbi.dict_cursor(conn)
-    if (kind == "title" or kind == "dep" or kind == "cnum"):
+    if (kind in ["title", "dep", "cnum"]):
         curs.execute('''SELECT distinct cnum, title
                         FROM course
                         WHERE {} like %s
                         ORDER BY cnum ASC, title ASC'''.format(kind), 
-                        [query + '%']) 
+                        ['%' + query + '%']) 
         courses = curs.fetchall()
 
         # Finds all sections associated with each distinct course
+        # Can't use inner joins b/c denormalized database
         for course in courses: 
             course['sections'] = getSections(conn, course['cnum'], course['title'])
             course['ratings'] = getCourseRatings(conn, course)
@@ -248,7 +249,7 @@ def getCoursesByProf(conn, query):
     curs.execute('''SELECT distinct prof 
                     FROM course
                     WHERE prof like %s
-                    ORDER BY prof ASC''', [query + '%'])
+                    ORDER BY prof ASC''', ['%' + query + '%'])
     profs = curs.fetchall()
 
     for prof in profs: 
@@ -299,10 +300,10 @@ def getCourseRatings(conn, course):
 def numSections(conn, query, kind):
     '''Input: user query and kind. Output: number of sections fitting that query'''
     curs = dbi.cursor(conn)
-    if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
+    if (kind in ["title", "dep", "cnum", "prof"]):
         curs.execute('''SELECT count(*) 
                         FROM course
-                        WHERE {} like %s'''.format(kind), [query + '%'])
+                        WHERE {} like %s'''.format(kind), ['%' + query + '%'])
         num = curs.fetchone()
         return num[0]
 
@@ -310,10 +311,10 @@ def getOneResult(conn, query, kind):
     '''Input: user query and kind (for a search result that 
        returns exactly one course). Output: cid of unique section fitting that query'''
     curs = dbi.dict_cursor(conn)
-    if (kind == "title" or kind == "dep" or kind == "cnum" or kind == "prof"):
+    if (kind in ["title", "dep", "cnum", "prof"]):
         curs.execute('''SELECT cid, cnum
                         FROM course
-                        WHERE {} like %s'''.format(kind), [query + '%']
+                        WHERE {} like %s'''.format(kind), ['%' + query + '%']
                     ) 
         section = curs.fetchone()
         return section['cid']
