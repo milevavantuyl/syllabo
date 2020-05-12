@@ -17,6 +17,17 @@
     margin: 20px;
 }
 
+#feedback {
+    width: 80%;
+    height: 50px;
+    border: 10px;
+    border-style: solid;
+    border-color: rgb(197, 211, 249);
+    background-color: #eef2fc;
+    padding: 25px;
+    margin: 20px;
+}
+
 .button1 {
     background-color: white; 
     color: black; 
