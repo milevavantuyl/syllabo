@@ -48,6 +48,8 @@ def index():
 @app.route('/create/', methods=['GET','POST'])
 def createCourse():
     if request.method == 'GET':
+        if 'CAS_ATTRIBUTES' not in session:
+            return redirect(url_for('login'))
         return render_template('create_course.html')
     else:
         values = request.form
@@ -69,8 +71,6 @@ def uploadSyllabus(n):
         if 'file' not in request.files:
             flash('No file part')
         file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
         if file.filename == '':
             flash('No selected file')
         if file and functions.allowed_file(file.filename):
@@ -89,7 +89,6 @@ def explore():
 @app.route('/search/', methods = ['GET']) 
 def search(): 
     conn = dbi.connect()
-
     search = request.args.get('search')
     kind = request.args.get('type') 
 
@@ -199,6 +198,8 @@ def getPic(bNum):
 def update(cid):
     basics = functions.getBasics(cid)
     if request.method == 'GET':
+        if 'CAS_ATTRIBUTES' not in session:
+            return redirect(url_for('login'))
         return render_template('update_course.html', basics = basics)
     elif request.method == 'POST':
         updateValues = request.form.to_dict()
