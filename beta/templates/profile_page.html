@@ -5,6 +5,12 @@
 <title>{{student.name}}</title>
 <img src="{{url_for('getPic', bNum = student.bNum)}}" alt="Profile picture for {{student.name}}" style="height:300px;">
 
+{% if student.bNum == cas_attributes.get("cas:id") %}
+    <br><a href= "{{url_for('uploadPic')}}">Update profile picture</a>
+   <form method="GET" action="{{url_for('cas.logout')}}"><button>logout {{student.name}}</button></form>
+   <form method="GET" action="{{url_for('login')}}"></form>
+{% endif %}   
+
 <table id="info">
     <tr>
         <td>Email: {{student.email}}</td>
@@ -13,7 +19,6 @@
         <td>Major: {{student.major}}</td>
     </tr>
 </table>
-
 
 <table id="student-comments">
         <tr>
