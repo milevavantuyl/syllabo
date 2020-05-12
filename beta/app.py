@@ -10,6 +10,7 @@ UPLOAD_FOLDER = 'upload_folder'
 ALLOWED_EXTENSIONS = {'pdf'}
 PORTRAIT_FOLDER = 'upload_folder'
 
+
 app = Flask(__name__)
 
 from flask_cas import CAS
@@ -183,9 +184,10 @@ def getPic(bNum):
         '''select filename from portrait where bNum = %s''',
         [bNum])
     row = curs.fetchone()
-    if row['filename'] == '' or row == None:
-        return send_from_directory(app.config['UPLOAD_FOLDER'],'NoPropic.png')
-    return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+    if row != None:
+        return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'NoPropic.png')
+    
 
 @app.route('/course/<cid>/update', methods=['GET','POST'])
 def update(cid):
