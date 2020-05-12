@@ -50,11 +50,12 @@ def createCourse():
     if request.method == 'GET':
         return render_template('create_course.html')
     else:
+        conn = dbi.connect()
         values = request.form
-        isNew = functions.isCourseNew(values['course-title'], values['course-prof'], 
+        isNew = functions.isCourseNew(conn, values['course-title'], values['course-prof'], 
                 values['course-sem'], values['course-year'])
         if isNew == True:
-            cid = functions.insertCourse(list(values.values()))
+            cid = functions.insertCourse(conn, list(values.values()))
             flash('Your updates have been made!')
             return redirect(url_for('uploadSyllabus', n = cid))
         else:
@@ -89,7 +90,6 @@ def explore():
 @app.route('/search/', methods = ['GET']) 
 def search(): 
     conn = dbi.connect()
-
     search = request.args.get('search')
     kind = request.args.get('type') 
 
@@ -128,10 +128,11 @@ def search():
 
 @app.route('/course/<cid>', methods=['GET','POST'])
 def showCourse(cid):
+    conn = dbi.connect()
     basics = functions.getBasics(cid)
     if request.method == 'GET':
-        avgRatings = functions.getAvgRatings(cid)
-        comments = functions.getComments(cid) 
+        avgRatings = functions.getAvgRatings(conn, cid)
+        comments = functions.getComments(conn, cid) 
         return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
     elif request.method == 'POST':
@@ -140,15 +141,15 @@ def showCourse(cid):
             try: 
                 bNum = functions.getBNum()
                 print(bNum)
-                functions.addFavorite(bNum, basics['cid'])
-                avgRatings = functions.getAvgRatings(cid)
-                comments = functions.getComments(cid)
+                functions.addFavorite(conn, bNum, basics['cid'])
+                avgRatings = functions.getAvgRatings(conn, cid)
+                comments = functions.getComments(conn, cid)
                 flash('Course added to favorites')
                 return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
             except Exception as err:
-                avgRatings = functions.getAvgRatings(cid)
-                comments = functions.getComments(cid)
+                avgRatings = functions.getAvgRatings(conn, cid)
+                comments = functions.getComments(conn, cid)
                 flash('Please log in to favorite a course!') 
                 return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
@@ -163,8 +164,8 @@ def showCourse(cid):
             comment = request.form.get('new_comment')
             functions.makeRatings(functions.getBNum(), cid, rR, uR, dR, eR, hW, comment) 
             #have to recalculate the ratings and fetch the comments again
-            avgRatings = functions.getAvgRatings(cid)
-            comments = functions.getComments(cid)
+            avgRatings = functions.getAvgRatings(conn, cid)
+            comments = functions.getComments(conn, cid)
             #now we render the page again
             return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                     comments=comments)
