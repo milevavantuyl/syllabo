@@ -177,7 +177,8 @@ def getPDF(cid):
         '''select filename from syllabi where cid = %s''',
         [cid])
     row = curs.fetchone()
-    if row != None:
+    print(row)
+    if row != None and row['filename'] != '':
         return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
     return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
    
