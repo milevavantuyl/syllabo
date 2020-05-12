@@ -141,8 +141,11 @@ def showCourse(cid):
                 return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
                                 comments=comments)
             except Exception as err:
-                print(err)
-                flash(err) 
+                avgRatings = functions.getAvgRatings(cid)
+                comments = functions.getComments(cid)
+                flash('Please log in to favorite a course!') 
+                return render_template('course_page.html', basics = basics, avgRatings = avgRatings, 
+                                comments=comments)
         elif action == 'Rate':
             print('trying to rate/comment')
             #user is rating (which includes commenting) the course.
@@ -172,9 +175,6 @@ def getPDF(cid):
         return send_from_directory(app.config['UPLOAD_FOLDER'],row['filename'])
     return send_from_directory(app.config['UPLOAD_FOLDER'],'NoSyllabus.pdf')
    
-    
-
-
 @app.route('/pic/<bNum>')
 def getPic(bNum):
     conn = dbi.connect()
@@ -299,8 +299,13 @@ def profile(name):
         studentDict['major'] = student[2]
         favorites = functions.getFavorites(bNum)
         comments = functions.getStudentComments(bNum)
-        return render_template('profile_page.html', 
-                student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+        try:
+            return render_template('profile_page.html', 
+                    student = studentDict, favorites = favorites, comments = comments, cas_attributes = session.get('CAS_ATTRIBUTES'))
+        except Exception as err:
+            print(err)
+            flash("Please log in to view profiles!")
+            return redirect(url_for('login'))
     elif request.method == 'POST':
         newMajor = request.form.get('major')
         functions.updateMajor(newMajor, bNum)
