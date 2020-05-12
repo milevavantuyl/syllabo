@@ -14,6 +14,10 @@
     </tr>
 </table>
 
+{% if student.name %}
+   <form method="GET" action="{{url_for('cas.logout')}}"><button>logout {{student.name}}</button></form>
+   <form method="GET" action="{{url_for('login')}}"></form>
+{% endif %}   
 
 <table id="student-comments">
         <tr>
