@@ -31,11 +31,10 @@ def getBasics(cid):
     conn.commit()
     return basicsDict
 
-def getAvgRatings(cid):
+def getAvgRatings(conn, cid):
     '''getAvgRatings() returns a dictionary of average course ratings information 
        by aggregating info from the rates table in syllabo_db given the cid.
        These averages are used to populate the course page'''
-    conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
             SELECT AVG(relevRate) AS rel, AVG(usefulRate) AS useful, AVG(diffRate) AS diff, AVG(expectRate) AS exp, AVG(hoursWk) AS hrsWk
@@ -45,10 +44,9 @@ def getAvgRatings(cid):
     conn.commit()
     return avgRatingsDict
 
-def getComments(cid):
+def getComments(conn, cid):
     '''getComments() returns a dictionary of all of the comments for a course
        given the cid. This information will be displayed on the course page.'''
-    conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
             SELECT name, comment  
@@ -71,9 +69,8 @@ def makeRatings(bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk,
             [bNum, cid, relevRate, usefulRate, diffRate, expectRate, hoursWk, comment])
     conn.commit()
 
-def addFavorite(bNum, cid):
+def addFavorite(conn, bNum, cid):
     '''adds a course to a students "favorites"'''
-    conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     query = curs.execute('''
             INSERT INTO favorites(bNum, cid)
@@ -321,10 +318,9 @@ def getOneResult(conn, query, kind):
 
 # Safiya's functions:
 
-def isCourseNew(title, professor, semester, year):
+def isCourseNew(conn, title, professor, semester, year):
     '''Sees if a course with the same title, professor, semester, and year is already in the
        databases'''
-    conn = dbi.connect()
     curs = dbi.cursor(conn)
     curs.execute('SELECT cid from course where title = %s and prof = %s and sem = %s and yr = %s',
     [title, professor, semester, year])
@@ -333,9 +329,8 @@ def isCourseNew(title, professor, semester, year):
         return False
     return True
 
-def insertCourse(val):
+def insertCourse(conn, val):
     '''Takes all course info as a parameter and uses it to insert the given course into the database'''
-    conn = dbi.connect()
     curs = dbi.cursor(conn)
     curs.execute('''
     INSERT into course(title, dep, cnum, crn, web, yr, sem, prof)
